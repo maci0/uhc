@@ -114,7 +114,7 @@ def main():
     output_file = open(args.output, "wb")
 
     # Write initial NOP
-    output_file.write(isa.Instruction.encode(isa.Opcode.NOP, isa.AddressingMode.NONE, isa.AddressingMode.NONE, isa.Operand.NONE, isa.Operand.NONE))
+    #output_file.write(isa.Instruction.encode(isa.Opcode.NOP, isa.AddressingMode.NONE, isa.AddressingMode.NONE, isa.Operand.NONE, isa.Operand.NONE))
 
     for instruction in parse_file(input_file):
         opcode, am1, am2, op1, op2 = assemble_instruction(instruction)

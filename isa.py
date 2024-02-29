@@ -155,6 +155,8 @@ instruction_set = {
     "MOV": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "ADD": Instruction(Opcode.ADD, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "SUB": Instruction(Opcode.SUB, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
+    "MUL": Instruction(Opcode.MUL, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
+    "DIV": Instruction(Opcode.DIV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "JMP": Instruction(Opcode.JMP, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
     "JEQ": Instruction(Opcode.JEQ, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
     "RST": Instruction(Opcode.RST, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),

@@ -1,7 +1,7 @@
 nop
 init:
     mov 0 r9  ; Initialize r9 to 3
-    mov 5 r8 ; Initialize r8 to 999999
+    mov 5 r8 ; Initialize r8 to 5
 
 loop:
     add 1 r9  ; Increment r9 by 1
