@@ -82,15 +82,15 @@ def execute_instruction():
 
     elif cache.opcode == isa.Opcode.CMP:
         if source_value == destination:
-            print("Equal")
+            #print("Equal")
             sr |= 0x1
         else:
-            print("Not Equal")
+            #print("Not Equal")
             sr &= ~0x1
 
     elif cache.opcode == isa.Opcode.JEQ:
         if sr & 0x1:
-            print("Jumping to", source_value)
+            #print("Jumping to", source_value)
             pc = source_value
             sr &= ~0x1
 
@@ -121,7 +121,7 @@ while running:
     print(cache)
     # print(cache.prettyprint())
     execute_instruction()
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
 
 file.close()
