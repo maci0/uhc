@@ -74,6 +74,7 @@ def set_value(mode, operand, value):
     
 def execute_instruction(instruction):
     global pc, sr
+    pc +=1
 
     if instruction.opcode == isa.Opcode.NOP:
         pass
@@ -98,8 +99,10 @@ def execute_instruction(instruction):
 
     elif instruction.opcode == isa.Opcode.CMP:
         if get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2):
+            #print ("equal")
             sr |= 0x1
         else:
+            #print ("not equal")
             sr &= ~0x1
 
     elif instruction.opcode == isa.Opcode.JEQ:
@@ -119,6 +122,7 @@ def execute_instruction(instruction):
         exit(1)
 
 
+
 def print_status():
     print("PC: %u | SP: %u | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu"  %(
         pc, sp,
@@ -135,17 +139,15 @@ def print_status():
     pass
 
 while running:
-    #print("PC:", pc, "SR", sr, "Registers 0-10:", registers[0:10])
-    #print("MEM 0-10:", mem[0:10])
+    
 
-    # print("Fetching Instruction")
+    #print_status()
     instruction = fetch_instruction(file)
     instruction = decode_instruction(instruction)
-    #print("Executing:", instruction)
+    print("Executing:", instruction)
     execute_instruction(instruction)
-    print_status()
-    pc +=1
-
+    #print_status()
+    #
 
     # print(cache.prettyprint())
     #time.sleep(0.5)

@@ -97,7 +97,7 @@ class Operand:
             return None
 
     def to_int(operand: str):
-        #strip operand up to the first alnum, then check if it's a 0x value
+        #strip operand up to the first digit, then check if it's a 0x value
         for i, char in enumerate(operand):
             if char.isdigit():
                 operand = operand[i:]

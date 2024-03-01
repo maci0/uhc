@@ -4,6 +4,11 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <fcntl.h>
+
 #include "isa.h"
 
 #define BINFILE "test.bin"
@@ -26,8 +31,8 @@ void print_state();
 uint64_t registers[64];
 uint8_t stack[1024];
 uint8_t mem[1024];
-uint8_t sp = 0; // Stack Pointer
-uint8_t pc = 0; // Program Counter
+uint64_t sp = 0; // Stack Pointer
+uint64_t pc = 0; // Program Counter
 uint8_t sr = 0; // Status Register
 bool running = true;
 
@@ -86,15 +91,18 @@ int set_value(uint8_t mode, uint64_t operand, uint64_t value)
 size_t fetch_instruction(FILE *file, uint8_t buffer[INSTRUCTION_WIDTH])
 {
 
-    fseek(file, INSTRUCTION_WIDTH, pc * INSTRUCTION_WIDTH);
+    //printf("File position indicator: %ld\n", ftell(file));
+
+    fseek(file, (INSTRUCTION_WIDTH * pc), SEEK_SET);
     //printf("File position indicator: %ld\n", ftell(file));
 
     size_t read = fread(buffer, sizeof(uint8_t), INSTRUCTION_WIDTH, file);
     if (read != INSTRUCTION_WIDTH)
     {
-        perror("Failed to read instruction");
+        perror("Failed to read instruction\n");
         exit(EXIT_FAILURE);
     }
+    //printf("File position indicator: %ld\n", ftell(file));
 
     return read;
 }
@@ -113,6 +121,7 @@ int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instructi
 
 int execute_instruction(Instruction instruction)
 {
+    pc++;
     //printf("Instruction: %u %u %u %lu %lu\n", instruction.opcode, instruction.addressing_mode1, instruction.addressing_mode2, instruction.operand1, instruction.operand2);
 
     switch (instruction.opcode)
@@ -138,18 +147,20 @@ int execute_instruction(Instruction instruction)
         pc = get_value(instruction.addressing_mode1, instruction.operand1);
         break;
     case CMP:
-        if (get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2))
-        {
+        if (get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2)) {
+            //printf("equal\n");
             sr |= 0x1;
         }
         else
         {
+            //printf("not equal\n");
             sr &= ~0x1;
         }
         break;
     case JEQ:
         if (sr & 0x1)
         {
+            printf("attempting jump to %lu\n", instruction.operand1);
             pc = get_value(instruction.addressing_mode1, instruction.operand1);
             sr &= ~0x1;
         }
@@ -161,10 +172,11 @@ int execute_instruction(Instruction instruction)
         halt();
         break;
     default:
-        printf("Invalid opcode");
+        printf("%s: Invalid opcode: %d \n", __func__, instruction.opcode);
         exit(EXIT_FAILURE);
         break;
     }
+
 
     return 0;
 }
@@ -197,24 +209,28 @@ int main()
     reset_state();
 
     binfile = fopen(BINFILE, "rb");
-    assert(binfile != NULL && "Failed to open file");
+    //assert(binfile != NULL && "Failed to open file");
+
+        //print_state();
+
+
+
 
     while (running == true)
     {
-        pc++;
         fetch_instruction(binfile, buffer);
         decode_instruction(buffer, &instruction);
         execute_instruction(instruction);
-        print_state();
+        //print_state();
     }
-
+    print_state();
     fclose(binfile);
     return 0;
 }
 
 void print_state()
 {
-    printf("PC: %u | SP: %u | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
+    printf("PC: %lu | SP: %lu | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
            pc, sp,
            registers[0], registers[1], registers[2], registers[3], registers[4],
            registers[5], registers[6], registers[7], registers[8], registers[9], registers[10]);
