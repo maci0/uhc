@@ -37,6 +37,16 @@ class Opcode:
     JMP: int = 0x0C
     CMP: int = 0x0D
     JEQ: int = 0x0E
+
+    # Memory Operations
+    LD8:  int = 240
+    LD16: int = 241
+    LD32: int = 242
+    LD64: int = 243
+    ST8:  int = 244
+    ST16: int = 245
+    ST32: int = 246
+    ST64: int = 247
     
     # System Control
     RST: int = 0xFE
@@ -65,25 +75,34 @@ class Operand:
         # 1. Register Addressing Mode, eg. r1 r2 r3 - example: ADD r1 r2 - adds r1 to r2, overwrites r2, stores result in r2
         # 2. Direct Memory Addressing Mode eg. 0x12345678 - address of memory location - example: ADD 0x12345678 r1 - adds value at memory location 0x12345678 to r1, overwrites r1, stores result in r1
         # 3. Indirect Memory Addressing Mode eg. *r1 *r2 *r3 - address contained in register r1 r2 r3 - example: ADD *r1 r2 - adds value at memory location contained in r1 to r2, overwrites r2, stores result in r2
+  
+
         if operand.startswith('R'):
             return AddressingMode.REGISTER
+        elif operand.startswith('$'):
+            return AddressingMode.DIRECT
         elif operand.startswith('*'):
             return AddressingMode.INDIRECT
-        elif operand.startswith('0X'):
-            return AddressingMode.DIRECT
-        elif operand.isalnum():
+        if operand.startswith('0X'):
+            return AddressingMode.IMMEDIATE
+        if operand.isdigit():
             return AddressingMode.IMMEDIATE
         else:
             print("Error: Invalid addressing mode")
             return None
+
     def to_int(operand: str):
-        if operand.startswith('R'):
-            return int(operand[1:])
-        elif operand.startswith('*'):
-            return int(operand[2:])
-        elif operand.startswith('0X'):
-            return int(operand, 16)
-        elif operand.isalnum():
+        #strip operand up to the first alnum, then check if it's a 0x value
+        for i, char in enumerate(operand):
+            if char.isdigit():
+                operand = operand[i:]
+                break
+
+        print ("operand", operand)
+
+        if operand.startswith('0X'):
+            return int(operand[2:], 16)
+        elif operand.isdigit():
             return int(operand)
         else:
             print("Error: Invalid operand")
@@ -147,7 +166,11 @@ class Instruction:
         addressing_mode2 = int.from_bytes(ba[2:3], byteorder="little")
         operand1 = int.from_bytes(ba[3:11], byteorder="little")
         operand2 = int.from_bytes(ba[11:19], byteorder="little")
-        return Instruction(opcode, addressing_mode1, addressing_mode2, operand1, operand2)    
+        return Instruction(opcode, addressing_mode1, addressing_mode2, operand1, operand2)
+
+    def validate(opcode, addressing_mode1, addressing_mode2, operand1, operand2):
+        # check if it matches with instruction set
+        pass    
 
 
 # Define the instruction set
