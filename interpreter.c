@@ -14,8 +14,8 @@ size_t fetch_instruction(FILE *file, uint8_t buffer[INSTRUCTION_WIDTH]);
 int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instruction);
 int execute_instruction(Instruction instruction);
 
-uint64_t get_byte(uint8_t mode, uint64_t operand);
-int set_byte(uint8_t mode, uint64_t operand, uint64_t value);
+uint64_t get_value(uint8_t mode, uint64_t operand);
+int set_value(uint8_t mode, uint64_t operand, uint64_t value);
 
 int reset_state();
 void halt();
@@ -31,7 +31,7 @@ uint8_t pc = 0; // Program Counter
 uint8_t sr = 0; // Status Register
 bool running = true;
 
-uint64_t get_byte(uint8_t mode, uint64_t operand)
+uint64_t get_value(uint8_t mode, uint64_t operand)
 {
     assert((mode & ALL) == mode); // Ensure mode is within valid range
 
@@ -56,14 +56,14 @@ uint64_t get_byte(uint8_t mode, uint64_t operand)
     }
 }
 
-int set_byte(uint8_t mode, uint64_t operand, uint64_t value)
+int set_value(uint8_t mode, uint64_t operand, uint64_t value)
 {
     assert((mode & ALL_RW) == mode); // Ensure mode is within valid range for writing
 
     switch (mode)
     {
     case IMMEDIATE:
-        fprintf(stderr, "Illegal mode for set_byte\n");
+        fprintf(stderr, "Illegal mode for set_value\n");
         exit(EXIT_FAILURE);
     case REGISTER:
         registers[operand] = value;
@@ -75,10 +75,10 @@ int set_byte(uint8_t mode, uint64_t operand, uint64_t value)
         return 0;
     case INDIRECT:
         // IMMEDIATE is read-only, INDIRECT might be unimplemented
-        fprintf(stderr, "Illegal or unimplemented mode for set_byte\n");
+        fprintf(stderr, "Illegal or unimplemented mode for set_value\n");
         exit(EXIT_FAILURE);
     default:
-        fprintf(stderr, "Illegal mode for set_byte\n");
+        fprintf(stderr, "Illegal mode for set_value\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -120,25 +120,25 @@ int execute_instruction(Instruction instruction)
     case NOP:
         break;
     case MOV:
-        set_byte(instruction.addressing_mode2, instruction.operand2, get_byte(instruction.addressing_mode1, instruction.operand1));
+        set_value(instruction.addressing_mode2, instruction.operand2, get_value(instruction.addressing_mode1, instruction.operand1));
         break;
     case ADD:
-        set_byte(instruction.addressing_mode2, instruction.operand2, (get_byte(instruction.addressing_mode2, instruction.operand2) + get_byte(instruction.addressing_mode1, instruction.operand1)));
+        set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) + get_value(instruction.addressing_mode1, instruction.operand1)));
         break;
     case SUB:
-        set_byte(instruction.addressing_mode2, instruction.operand2, (get_byte(instruction.addressing_mode2, instruction.operand2) - get_byte(instruction.addressing_mode1, instruction.operand1)));
+        set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) - get_value(instruction.addressing_mode1, instruction.operand1)));
         break;
     case MUL:
-        set_byte(instruction.addressing_mode2, instruction.operand2, (get_byte(instruction.addressing_mode2, instruction.operand2) * get_byte(instruction.addressing_mode1, instruction.operand1)));
+        set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) * get_value(instruction.addressing_mode1, instruction.operand1)));
         break;
     case DIV:
-        set_byte(instruction.addressing_mode2, instruction.operand2, (get_byte(instruction.addressing_mode2, instruction.operand2) / get_byte(instruction.addressing_mode1, instruction.operand1)));
+        set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) / get_value(instruction.addressing_mode1, instruction.operand1)));
         break;
     case JMP:
-        pc = get_byte(instruction.addressing_mode1, instruction.operand1);
+        pc = get_value(instruction.addressing_mode1, instruction.operand1);
         break;
     case CMP:
-        if (get_byte(instruction.addressing_mode1, instruction.operand1) == get_byte(instruction.addressing_mode2, instruction.operand2))
+        if (get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2))
         {
             sr |= 0x1;
         }
@@ -150,7 +150,7 @@ int execute_instruction(Instruction instruction)
     case JEQ:
         if (sr & 0x1)
         {
-            pc = get_byte(instruction.addressing_mode1, instruction.operand1);
+            pc = get_value(instruction.addressing_mode1, instruction.operand1);
             sr &= ~0x1;
         }
         break;
@@ -214,10 +214,10 @@ int main()
 
 void print_state()
 {
-    printf("PC: %u | SP: %u | R[0-9]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
+    printf("PC: %u | SP: %u | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
            pc, sp,
            registers[0], registers[1], registers[2], registers[3], registers[4],
-           registers[5], registers[6], registers[7], registers[8], registers[9]);
+           registers[5], registers[6], registers[7], registers[8], registers[9], registers[10]);
 
     // Print the first 10 elements of mem[]
     printf("SR: %u | ##### |",sr);

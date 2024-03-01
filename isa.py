@@ -2,6 +2,11 @@
 
 from dataclasses import dataclass
 
+import ctypes
+
+uint8_t = ctypes.c_uint64
+uint64_t = ctypes.c_uint64
+
 # | Opcode (8 bits) | Addressing Mode 1 (8 bits) | Addressing Mode 2 (8 bits) | Operand 1 (64 bits) | Operand 2 (64 bits) |
 # |-----------------|----------------------------|----------------------------|----------------------|----------------------|
 # | 1 byte          | 1 byte                     | 1 byte                     | 8 bytes              | 8 bytes              |
