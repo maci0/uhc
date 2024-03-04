@@ -103,7 +103,7 @@ class Operand:
                 operand = operand[i:]
                 break
 
-        print ("operand", operand)
+        #print ("operand", operand)
 
         if operand.startswith('0X'):
             return int(operand[2:], 16)

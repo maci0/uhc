@@ -12,6 +12,8 @@ args = parser.parse_args()
 
 
 def parse_file(filename):
+    offset=0
+
     assembly_code = filename.read()
     # Split the code into lines
     lines = assembly_code.strip().split("\n")
@@ -34,6 +36,19 @@ def parse_file(filename):
         if not line:
             return None
 
+        # Assembler directives
+        if line.startswith("."):
+            parts = line.split()
+            directive = parts[0]
+            if directive == ".ORG":
+                #print ("DIRECTIVE:", directive)
+                offset = isa.Operand.to_int(parts[1])
+                #print("OFFSET:", offset)
+                continue
+            if directive == ".END":
+                #print ("Encountered directive .END, ending assembly")
+                break
+
         # Check if the line is a label
         if line.endswith(":"):
             label_name = line[:-1]  # Remove the colon
@@ -51,7 +66,7 @@ def parse_file(filename):
             parts = line.split()
             instruction = parts[0]
             operands = parts[1:]
-            instructions.append((instruction, operands))
+            instructions.append((instruction, operands, offset))
 
     # Now you have a list of instructions and a dictionary of labels with their associated instruction indices
     print("Instructions:", instructions)
@@ -59,7 +74,7 @@ def parse_file(filename):
 
     parsed_instructions = []
 
-    for instr, ops in instructions:
+    for instr, ops, offset in instructions:
         mnemonic = instr
         operands = []
 
@@ -69,15 +84,32 @@ def parse_file(filename):
                 operands.append(str(labels[op]))
             else:
                 operands.append(op)
-
+        
         # Print the instruction and operands
-        print(f"Instruction: {mnemonic}, Operands: {', '.join(operands)}")
-        parsed_instructions.append((mnemonic, operands))
+        print(f"Instruction: {mnemonic}, Operands: {', '.join(operands)}, Offset: {offset}")
+        parsed_instructions.append((mnemonic, operands, offset))
+
+
+
+    # Find EQU and replace all instances of the label with the value
+    # Find DB and store the value in memory
+    # Find DW and store the value in memory
+    # Find DS and reserve space in memory
+    # Find END and stop processing
+    # Find INCLUDE and include the file
+    # Find MACRO and define a macro
+    # Find ENDM and end the macro
+    # Find IF and check the condition
+        
+        
+
+
+        
     return parsed_instructions
 
 
 def assemble_instruction(asm):
-    mnemonic, args = asm
+    mnemonic, args, offset = asm
     if not hasattr(isa.Opcode, mnemonic):
         print("Error: Invalid mnemonic ")
         return
@@ -101,6 +133,12 @@ def assemble_instruction(asm):
         addressing_mode2 = isa.Operand.infer_addressing_mode(args[1])
         operand1: isa.Operand = isa.Operand.to_int(args[0])
         operand2: isa.Operand = isa.Operand.to_int(args[1])
+
+
+    #print ("OFFSET:", offset)
+    if addressing_mode1 == isa.AddressingMode.DIRECT: operand1 += offset
+    if addressing_mode2 == isa.AddressingMode.DIRECT: operand2 += offset
+    
 
     print("assemble:", opcode, addressing_mode1, addressing_mode2, operand1, operand2)
 
