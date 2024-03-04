@@ -13,9 +13,9 @@
 
 #define BINFILE "test.bin"
 
-typedef struct Instruction Instruction;
+//typedef struct Instruction Instruction;
 
-size_t fetch_instruction(FILE *file, uint8_t buffer[INSTRUCTION_WIDTH]);
+void fetch_instruction(char *mem, uint8_t buffer[INSTRUCTION_WIDTH]);
 int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instruction);
 int execute_instruction(Instruction instruction);
 
@@ -88,23 +88,10 @@ int set_value(uint8_t mode, uint64_t operand, uint64_t value)
     }
 }
 
-size_t fetch_instruction(FILE *file, uint8_t buffer[INSTRUCTION_WIDTH])
+void fetch_instruction(char *mem, uint8_t buffer[INSTRUCTION_WIDTH])
 {
+    memcpy(buffer, &mem[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
 
-    //printf("File position indicator: %ld\n", ftell(file));
-
-    fseek(file, (INSTRUCTION_WIDTH * pc), SEEK_SET);
-    //printf("File position indicator: %ld\n", ftell(file));
-
-    size_t read = fread(buffer, sizeof(uint8_t), INSTRUCTION_WIDTH, file);
-    if (read != INSTRUCTION_WIDTH)
-    {
-        perror("Failed to read instruction\n");
-        exit(EXIT_FAILURE);
-    }
-    //printf("File position indicator: %ld\n", ftell(file));
-
-    return read;
 }
 
 int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instruction)
@@ -200,31 +187,49 @@ void halt()
     //exit(EXIT_SUCCESS);
 }
 
+void init()
+{
+    FILE *binfile;
+    binfile = fopen(BINFILE, "rb");
+    assert(binfile != NULL && "Failed to open file");
+
+    fseek(binfile, 0, SEEK_END);
+    size_t filesize = ftell(binfile);
+    rewind(binfile);
+
+    size_t read = fread(mem, 1, filesize, binfile);
+  if (read != filesize) {
+        if (feof(binfile)) {
+            fputs("Reading error: unexpected end of file", stderr);
+        } else if (ferror(binfile)) {
+            perror("Reading error");
+        }
+        exit(3);
+    }
+    //fread(mem, 1, filesize, binfile);
+    fclose(binfile);
+
+}
+
+
+
 int main()
 {
     Instruction instruction;                 // The instruction cache
     uint8_t buffer[INSTRUCTION_WIDTH]; // Read buffer for instructions
-    FILE *binfile;                     // file pointer to binary file
 
     reset_state();
-
-    binfile = fopen(BINFILE, "rb");
-    //assert(binfile != NULL && "Failed to open file");
-
-        //print_state();
-
-
+    init();
 
 
     while (running == true)
     {
-        fetch_instruction(binfile, buffer);
+        fetch_instruction((char *)mem, buffer);
         decode_instruction(buffer, &instruction);
         execute_instruction(instruction);
-        //print_state();
+        print_state();
     }
     print_state();
-    fclose(binfile);
     return 0;
 }
 
