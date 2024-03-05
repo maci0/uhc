@@ -4,19 +4,17 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
-#include <fcntl.h>
 
 #include "isa.h"
 
 #define BINFILE "test.bin"
 
-//typedef struct Instruction Instruction;
+// typedef struct Instruction Instruction;
 
-void fetch_instruction(char *mem, uint8_t buffer[INSTRUCTION_WIDTH]);
-int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instruction);
+void fetch_instruction(char *mem);
+int decode_instruction(Instruction *instruction);
 int execute_instruction(Instruction instruction);
 
 uint64_t get_value(uint8_t mode, uint64_t operand);
@@ -31,9 +29,13 @@ void print_state();
 uint64_t registers[64];
 uint8_t stack[1024];
 uint8_t mem[1024];
+uint8_t rom[1024];
 uint64_t sp = 0; // Stack Pointer
 uint64_t pc = 0; // Program Counter
-uint8_t sr = 0; // Status Register
+uint64_t ra = 0; // return address register
+uint8_t sr = 0;  // Status Register
+uint8_t ir[INSTRUCTION_WIDTH]; // instruction register
+
 bool running = true;
 
 uint64_t get_value(uint8_t mode, uint64_t operand)
@@ -47,10 +49,10 @@ uint64_t get_value(uint8_t mode, uint64_t operand)
     case REGISTER:
         return registers[operand];
     case DIRECT:
-    // TODO: for now we only load 64bit from memory
-        //printf("get value: %lu\n", *(uint64_t *)(mem + operand));
+        // TODO: for now we only load 64bit from memory
+        // printf("get value: %lu\n", *(uint64_t *)(mem + operand));
         return *(uint64_t *)(mem + operand);
-        //return (uint64_t)mem[operand];
+        // return (uint64_t)mem[operand];
     case INDIRECT:
         // Handle INDIRECT mode or leave as unimplemented
         fprintf(stderr, "INDIRECT mode not implemented\n");
@@ -74,8 +76,8 @@ int set_value(uint8_t mode, uint64_t operand, uint64_t value)
         registers[operand] = value;
         return 0;
     case DIRECT:
-    // TODO: for now we only store 64bit values
-        //printf("set value %lu\n", value);
+        // TODO: for now we only store 64bit values
+        // printf("set value %lu\n", value);
         *(uint64_t *)(mem + operand) = value;
         return 0;
     case INDIRECT:
@@ -88,19 +90,18 @@ int set_value(uint8_t mode, uint64_t operand, uint64_t value)
     }
 }
 
-void fetch_instruction(char *mem, uint8_t buffer[INSTRUCTION_WIDTH])
+void fetch_instruction(char *mem)
 {
-    memcpy(buffer, &mem[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
-
+    memcpy(ir, &rom[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
 }
 
-int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instruction)
+int decode_instruction(Instruction *instruction)
 {
-    instruction->opcode = buffer[0];
-    instruction->addressing_mode1 = buffer[1];
-    instruction->addressing_mode2 = buffer[2];
-    instruction->operand1 = *(uint64_t *)(buffer + 3);
-    instruction->operand2 = *(uint64_t *)(buffer + 11);
+    instruction->opcode = ir[0];
+    instruction->addressing_mode1 = ir[1];
+    instruction->addressing_mode2 = ir[2];
+    instruction->operand1 = *(uint64_t *)(ir + 3);
+    instruction->operand2 = *(uint64_t *)(ir + 11);
 
     printf("Instruction: %u %u %u %lu %lu\n", instruction->opcode, instruction->addressing_mode1, instruction->addressing_mode2, instruction->operand1, instruction->operand2);
     return 0;
@@ -109,7 +110,7 @@ int decode_instruction(uint8_t buffer[INSTRUCTION_WIDTH], Instruction *instructi
 int execute_instruction(Instruction instruction)
 {
     pc++;
-    //printf("Instruction: %u %u %u %lu %lu\n", instruction.opcode, instruction.addressing_mode1, instruction.addressing_mode2, instruction.operand1, instruction.operand2);
+    // printf("Instruction: %u %u %u %lu %lu\n", instruction.opcode, instruction.addressing_mode1, instruction.addressing_mode2, instruction.operand1, instruction.operand2);
 
     switch (instruction.opcode)
     {
@@ -133,14 +134,24 @@ int execute_instruction(Instruction instruction)
     case JMP:
         pc = get_value(instruction.addressing_mode1, instruction.operand1);
         break;
+    case CALL:
+        ra = pc+1;
+        pc = get_value(instruction.addressing_mode1, instruction.operand1);
+        break;
+    case RET:
+        //printf("RET CALLED: PC: %lu, RA: %lu\n", pc, ra);
+        pc = ra;
+        ra = 0;
+        break;
     case CMP:
-        if (get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2)) {
-            //printf("equal\n");
+        if (get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2))
+        {
+            // printf("equal\n");
             sr |= 0x1;
         }
         else
         {
-            //printf("not equal\n");
+            // printf("not equal\n");
             sr &= ~0x1;
         }
         break;
@@ -164,7 +175,6 @@ int execute_instruction(Instruction instruction)
         break;
     }
 
-
     return 0;
 }
 
@@ -173,10 +183,13 @@ int reset_state()
     memset(registers, 0, sizeof(registers));
     memset(stack, 0, sizeof(stack));
     memset(mem, 0, sizeof(mem));
+    memset(ir, 0, sizeof(ir));
+
 
     pc = 0;
     sp = 0;
     sr = 0;
+    ra = 0;
     running = true;
     return 0;
 }
@@ -184,7 +197,7 @@ void halt()
 {
     printf("Halting\n");
     running = false;
-    //exit(EXIT_SUCCESS);
+    // exit(EXIT_SUCCESS);
 }
 
 void init()
@@ -197,35 +210,33 @@ void init()
     size_t filesize = ftell(binfile);
     rewind(binfile);
 
-    size_t read = fread(mem, 1, filesize, binfile);
-  if (read != filesize) {
-        if (feof(binfile)) {
+    size_t read = fread(rom, 1, filesize, binfile);
+    if (read != filesize)
+    {
+        if (feof(binfile))
+        {
             fputs("Reading error: unexpected end of file", stderr);
-        } else if (ferror(binfile)) {
+        }
+        else if (ferror(binfile))
+        {
             perror("Reading error");
         }
         exit(3);
     }
-    //fread(mem, 1, filesize, binfile);
     fclose(binfile);
-
 }
-
-
 
 int main()
 {
-    Instruction instruction;                 // The instruction cache
-    uint8_t buffer[INSTRUCTION_WIDTH]; // Read buffer for instructions
+    Instruction instruction; 
 
     reset_state();
     init();
 
-
     while (running == true)
     {
-        fetch_instruction((char *)mem, buffer);
-        decode_instruction(buffer, &instruction);
+        fetch_instruction((char *)rom);
+        decode_instruction(&instruction);
         execute_instruction(instruction);
         print_state();
     }
@@ -235,17 +246,17 @@ int main()
 
 void print_state()
 {
-    printf("PC: %lu | SP: %lu | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
-           pc, sp,
+    printf("PC: %lu | SP: %lu | RA: %lu | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
+           pc, sp, ra,
            registers[0], registers[1], registers[2], registers[3], registers[4],
            registers[5], registers[6], registers[7], registers[8], registers[9], registers[10]);
 
     // Print the first 10 elements of mem[]
-    printf("SR: %u | ##### |",sr);
-    printf(" M[0-15]: ");
-    for (int i = 0; i < 16; i++) {
-        printf("%02X ", (uint8_t)mem[i]);
+    printf("SR: %u | IR: %u %u %u %lu %lu", sr, ir[0], ir[1], ir[2], *(uint64_t *)(ir + 3), *(uint64_t *)(ir + 11));
+    printf(" | M[0-15]: ");
+    for (int i = 0; i < 16; i++)
+    {
+        printf("%02lX ", (uint64_t)mem[i]);
     }
     printf("\n");
-    
 }

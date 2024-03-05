@@ -3,3 +3,7 @@ __pycache__
 a.out
 test.bin
 interpreter
+test.dump
+test.py
+lexer.py
+ply.py

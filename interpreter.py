@@ -19,17 +19,21 @@ mem  = [0] * 8192  # 8 MB of memory
 sp = 0  # Stack Pointer
 pc = 0  # Program Counter
 sr = 0  # Status Register
+ir = [0] * 5 # Instruction register
+ra = 0 # return address register
 
 
 def reset_state():
     """Resets the state of the CPU."""
-    global pc, sr, sp, registers, stack, mem
+    global pc, sr, sp, registers, stack, mem, ir, ra
     pc = 0
     sr = 0
     sp = 0
     registers = [0] * 64
     stack = [0] * 1024
     mem = [0] * 8192
+    ir = [0] * 5
+    ra = 0
 
 
 def halt():
@@ -39,23 +43,22 @@ def halt():
     running = False
 
 def fetch_instruction(file):
-    global pc
+    global pc, ir
 
     file.seek(pc * isa.INSTRUCTION_WIDTH)
 
-    buf = file.read(isa.INSTRUCTION_WIDTH)
-    if not buf:
+    ir = file.read(isa.INSTRUCTION_WIDTH)
+    if not ir:
         return None
         exit (1)
-    else:
-        return buf
 
 def validate_instruction(instruction):
     cache = isa.Instruction.validate
     return cache
 
-def decode_instruction(instruction):
-    cache = isa.Instruction.decode(instruction)
+def decode_instruction():
+    global ir
+    cache = isa.Instruction.decode(ir)
     return cache 
 
 def get_value(mode, operand):
@@ -73,7 +76,7 @@ def set_value(mode, operand, value):
     elif mode == isa.AddressingMode.INDIRECT:     assert False, f"{__func__()}: Not implemented yet"
     
 def execute_instruction(instruction):
-    global pc, sr
+    global pc, sr, ra
     pc +=1
 
     if instruction.opcode == isa.Opcode.NOP:
@@ -96,6 +99,14 @@ def execute_instruction(instruction):
 
     elif instruction.opcode == isa.Opcode.JMP:
         pc = get_value(instruction.addressing_mode1, instruction.operand1)
+
+    elif instruction.opcode == isa.Opcode.CALL:
+        ra=pc+1
+        pc = get_value(instruction.addressing_mode1, instruction.operand1)
+
+    elif instruction.opcode == isa.Opcode.RET:
+        pc=ra
+        ra=0
 
     elif instruction.opcode == isa.Opcode.CMP:
         if get_value(instruction.addressing_mode1, instruction.operand1) == get_value(instruction.addressing_mode2, instruction.operand2):
@@ -125,7 +136,7 @@ def execute_instruction(instruction):
 
 def print_status():
     print("PC: %u | SP: %u | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu"  %(
-        pc, sp,
+        pc, sp, ra,
         registers[0], registers[1], registers[2], registers[3], registers[4],
         registers[5], registers[6], registers[7], registers[8], registers[9], registers[10]))
 
@@ -142,10 +153,27 @@ while running:
     
 
     #print_status()
-    instruction = fetch_instruction(file)
-    instruction = decode_instruction(instruction)
+    fetch_instruction(file)
+    instruction = decode_instruction()
     print("Executing:", instruction)
     execute_instruction(instruction)
+    # dump state to file
+
+    dump_file = open("test.dump", "w")
+
+
+
+    dump_file.write(str(pc))
+    dump_file.write(str(sp))
+    dump_file.write(str(sr))
+    dump_file.write(str(ra))
+    dump_file.write(str(ir))
+    dump_file.write(str(registers))
+    dump_file.write(str(mem))
+
+    # Close files
+    dump_file.close()
+
     #print_status()
     #
 

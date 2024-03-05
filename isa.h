@@ -48,6 +48,9 @@ typedef enum
     CMP = 0x0D,
     JEQ = 0x0E,
 
+    CALL = 200,
+    RET  = 201,
+
     LD8  = 240,
     LD16 = 241,
     LD32 = 242,

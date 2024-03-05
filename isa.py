@@ -32,7 +32,7 @@ class Opcode:
     
     # Bitwise Operations
     AND: int = 0x06
-    OR: int = 0x07
+    OR: int  = 0x07
     XOR: int = 0x08
     NOT: int = 0x09
     LSH: int = 0x0A
@@ -42,6 +42,10 @@ class Opcode:
     JMP: int = 0x0C
     CMP: int = 0x0D
     JEQ: int = 0x0E
+
+    # Function calls
+    CALL: int = 200
+    RET: int  = 201
 
     # Memory Operations
     LD8:  int = 240
@@ -187,6 +191,8 @@ instruction_set = {
     "DIV": Instruction(Opcode.DIV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "JMP": Instruction(Opcode.JMP, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
     "JEQ": Instruction(Opcode.JEQ, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
+    "CALL": Instruction(Opcode.JMP, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
+    "RET": Instruction(Opcode.JMP, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "RST": Instruction(Opcode.RST, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "NOP": Instruction(Opcode.NOP, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "HLT": Instruction(Opcode.HLT, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
