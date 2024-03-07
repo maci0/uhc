@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-
 #include "isa.h"
 
 #define BINFILE "test.bin"
@@ -27,16 +26,51 @@ void print_state();
 
 // Global variables
 uint64_t registers[64];
-uint8_t stack[1024];
-uint8_t mem[1024];
-uint8_t rom[1024];
-uint64_t sp = 0; // Stack Pointer
-uint64_t pc = 0; // Program Counter
-uint64_t ra = 0; // return address register
-uint8_t sr = 0;  // Status Register
+uint8_t stack[4096]; // currently unused
+uint8_t mem[8192];
+uint8_t rom[4096];             // currently holds the current program as read from the binary file
+uint64_t sp = 8000;               // Stack Pointer stack starts at mem[8000] and grows down
+uint64_t pc = 0;               // Program Counter
+uint64_t ra = 0;               // return address register
+uint8_t sr = 0;                // Status Register
 uint8_t ir[INSTRUCTION_WIDTH]; // instruction register
 
 bool running = true;
+
+/*
+uint8_t *memory_access (uint64_t index) {
+    if (index < 4096) {
+        return &rom[index];
+    } else if (index < (4096 + 8192)) {
+        return &mem[index - 4096];
+    } else if (index < (4096 + 8192 + 4096)) {
+        return &stack[index - (4096 + 8192)];
+    } else {
+        printf("ERROR: memory access out of bounds");
+        exit(EXIT_FAILURE);
+        return NULL;
+    }
+}
+*/
+
+uint8_t *memory_access(uint64_t index)
+{
+    if (index < 8000)
+    {
+        return &mem[index];
+    }
+    else if (index >= 8000)
+    {
+        // reserve for MMIO
+        // return MMIO[index];
+        printf("ERROR: memory access out of bounds");
+        return NULL;
+    }
+    else
+    {
+        return NULL;
+    }
+}
 
 uint64_t get_value(uint8_t mode, uint64_t operand)
 {
@@ -51,7 +85,7 @@ uint64_t get_value(uint8_t mode, uint64_t operand)
     case DIRECT:
         // TODO: for now we only load 64bit from memory
         // printf("get value: %lu\n", *(uint64_t *)(mem + operand));
-        return *(uint64_t *)(mem + operand);
+        return *(uint64_t *)memory_access(operand);
         // return (uint64_t)mem[operand];
     case INDIRECT:
         // Handle INDIRECT mode or leave as unimplemented
@@ -78,7 +112,7 @@ int set_value(uint8_t mode, uint64_t operand, uint64_t value)
     case DIRECT:
         // TODO: for now we only store 64bit values
         // printf("set value %lu\n", value);
-        *(uint64_t *)(mem + operand) = value;
+        *(uint64_t *)memory_access(operand) = value;
         return 0;
     case INDIRECT:
         // IMMEDIATE is read-only, INDIRECT might be unimplemented
@@ -119,6 +153,14 @@ int execute_instruction(Instruction instruction)
     case MOV:
         set_value(instruction.addressing_mode2, instruction.operand2, get_value(instruction.addressing_mode1, instruction.operand1));
         break;
+    case PUSH:
+        sp -= 8;
+        set_value(DIRECT, sp, get_value(instruction.addressing_mode1, instruction.operand1));
+        break;
+    case POP:
+        set_value(instruction.addressing_mode1, instruction.operand1, get_value(DIRECT, sp));
+        sp += 8;
+        break;
     case ADD:
         set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) + get_value(instruction.addressing_mode1, instruction.operand1)));
         break;
@@ -135,11 +177,16 @@ int execute_instruction(Instruction instruction)
         pc = get_value(instruction.addressing_mode1, instruction.operand1);
         break;
     case CALL:
-        ra = pc+1;
+        if (ra != 0)
+        {
+            printf("currently only call depth of 1 allowed\n");
+            exit(EXIT_FAILURE);
+        }
+        ra = pc + 1;
         pc = get_value(instruction.addressing_mode1, instruction.operand1);
         break;
     case RET:
-        //printf("RET CALLED: PC: %lu, RA: %lu\n", pc, ra);
+        // printf("RET CALLED: PC: %lu, RA: %lu\n", pc, ra);
         pc = ra;
         ra = 0;
         break;
@@ -185,9 +232,8 @@ int reset_state()
     memset(mem, 0, sizeof(mem));
     memset(ir, 0, sizeof(ir));
 
-
     pc = 0;
-    sp = 0;
+    sp = 8000;
     sr = 0;
     ra = 0;
     running = true;
@@ -228,7 +274,7 @@ void init()
 
 int main()
 {
-    Instruction instruction; 
+    Instruction instruction;
 
     reset_state();
     init();

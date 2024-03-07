@@ -23,25 +23,27 @@ class Opcode:
     
     # Data Movement
     MOV: int = 0x01
+    PUSH: int = 0x02
+    POP: int =  0x03
     
     # Arithmetic Operations
-    ADD: int = 0x02
-    SUB: int = 0x03
-    MUL: int = 0x04
-    DIV: int = 0x05
+    ADD: int = 0x04
+    SUB: int = 0x05
+    MUL: int = 0x06
+    DIV: int = 0x07
     
     # Bitwise Operations
-    AND: int = 0x06
-    OR: int  = 0x07
-    XOR: int = 0x08
-    NOT: int = 0x09
-    LSH: int = 0x0A
-    RSH: int = 0x0B
+    AND: int = 0x08
+    OR: int  = 0x09
+    XOR: int = 0x0A
+    NOT: int = 0x0B
+    LSH: int = 0x0C
+    RSH: int = 0x0D
     
     # Comparison and Conditional Branching
-    JMP: int = 0x0C
-    CMP: int = 0x0D
-    JEQ: int = 0x0E
+    JMP: int = 0x0E
+    CMP: int = 0x0F
+    JEQ: int = 0x10
 
     # Function calls
     CALL: int = 200
@@ -185,6 +187,8 @@ class Instruction:
 # Define the instruction set
 instruction_set = {
     "MOV": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
+    "PUSH": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
+    "POP": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
     "ADD": Instruction(Opcode.ADD, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "SUB": Instruction(Opcode.SUB, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "MUL": Instruction(Opcode.MUL, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),

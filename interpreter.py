@@ -16,7 +16,7 @@ running = True
 registers = [0] * 64
 stack = [0] * 1024  # 1 megabyte of memory
 mem  = [0] * 8192  # 8 MB of memory
-sp = 0  # Stack Pointer
+sp = 8000  # Stack Pointer
 pc = 0  # Program Counter
 sr = 0  # Status Register
 ir = [0] * 5 # Instruction register
@@ -28,7 +28,7 @@ def reset_state():
     global pc, sr, sp, registers, stack, mem, ir, ra
     pc = 0
     sr = 0
-    sp = 0
+    sp = 8000
     registers = [0] * 64
     stack = [0] * 1024
     mem = [0] * 8192
@@ -76,7 +76,7 @@ def set_value(mode, operand, value):
     elif mode == isa.AddressingMode.INDIRECT:     assert False, f"{__func__()}: Not implemented yet"
     
 def execute_instruction(instruction):
-    global pc, sr, ra
+    global pc, sr, ra, sp
     pc +=1
 
     if instruction.opcode == isa.Opcode.NOP:
@@ -84,6 +84,14 @@ def execute_instruction(instruction):
 
     elif instruction.opcode == isa.Opcode.MOV:
         set_value(instruction.addressing_mode2, instruction.operand2, get_value(instruction.addressing_mode1, instruction.operand1))
+
+    elif instruction.opcode == isa.Opcode.PUSH:
+        sp -= 8
+        set_value(isa.AddressingMode.DIRECT, sp, get_value(instruction.addressing_mode1, instruction.operand1))
+
+    elif instruction.opcode == isa.Opcode.POP:
+        set_value(instruction.addressing_mode1, instruction.operand1, get_value(isa.AddressingMode.DIRECT, sp))
+        sp += 8
 
     elif instruction.opcode == isa.Opcode.ADD:
         set_value(instruction.addressing_mode2, instruction.operand2, (get_value(instruction.addressing_mode2, instruction.operand2) + get_value(instruction.addressing_mode1, instruction.operand1)))
