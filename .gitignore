@@ -1,4 +1,5 @@
 .venv
+.vscode
 __pycache__
 a.out
 test.bin
@@ -7,3 +8,8 @@ test.dump
 test.py
 lexer.py
 ply.py
+emulator/uhc.srctrlbm
+emulator/uhc.srctrldb
+emulator/uhc.srctrlprj
+emulator/tisc-emu
+emulator/tisc-emu-gui

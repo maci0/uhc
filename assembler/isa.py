@@ -18,32 +18,35 @@ INSTRUCTION_WIDTH = 1 + 1 + 1 + 8 + 8
 
 @dataclass
 class Opcode:
+    # Illegal
+    NONE: int = 0x00
+
     # No Operation
-    NOP: int = 0x00
+    NOP: int = 0x01
     
     # Data Movement
-    MOV: int = 0x01
-    PUSH: int = 0x02
-    POP: int =  0x03
+    MOV: int = 0x02
+    PUSH: int = 0x03
+    POP: int =  0x04
     
     # Arithmetic Operations
-    ADD: int = 0x04
-    SUB: int = 0x05
-    MUL: int = 0x06
-    DIV: int = 0x07
+    ADD: int = 0x05
+    SUB: int = 0x06
+    MUL: int = 0x07
+    DIV: int = 0x08
     
     # Bitwise Operations
-    AND: int = 0x08
-    OR: int  = 0x09
-    XOR: int = 0x0A
-    NOT: int = 0x0B
-    LSH: int = 0x0C
-    RSH: int = 0x0D
+    AND: int = 0x09
+    OR: int  = 0x0A
+    XOR: int = 0x0B
+    NOT: int = 0x0C
+    LSH: int = 0x0D
+    RSH: int = 0x0E
     
     # Comparison and Conditional Branching
-    JMP: int = 0x0E
-    CMP: int = 0x0F
-    JEQ: int = 0x10
+    JMP: int = 0x0F
+    CMP: int = 0x10
+    JEQ: int = 0x11
 
     # Function calls
     CALL: int = 200
@@ -65,7 +68,7 @@ class Opcode:
 
 @dataclass
 class AddressingMode:
-    NONE = 0       # No Addressing Mode
+    NONE: int = 0       # No Addressing Mode
     IMMEDIATE = 1  # Immediate Value - A fixed value, eg. '123' '0x123' '0b1010'
     REGISTER = 2   # Register Addressing Mode - A register, eg. r1 r2 r3
     DIRECT = 4     # Direct Memory Addressing Mode - A memory address, eg. 0x12345678
@@ -122,14 +125,14 @@ class Operand:
 @dataclass
 class Instruction:
     opcode: Opcode
-    addressing_mode1: AddressingMode
-    addressing_mode2: AddressingMode
-    operand1: Operand
-    operand2: Operand
+    srcMode: AddressingMode
+    destMode: AddressingMode
+    srcOperand: Operand
+    destOperand: Operand
 
     def print(self):
         print (self.__repr__)
-        print ("Opcode:", self.opcode, "\nAllowed addressing modes operand 1:", self.addressing_mode1,"\nAllowed addressing modes operand 2:", self.addressing_mode2,"\nOperand 1:", self.operand1, "\nOperand 2:",self.operand2)
+        print ("Opcode:", self.opcode, "\nAllowed addressing modes operand 1:", self.srcMode,"\nAllowed addressing modes operand 2:", self.destMode,"\nOperand 1:", self.srcOperand, "\nOperand 2:",self.destOperand)
 
     def get_allowed_addressing_modes(bitmask: int):
         print ("Allowed addressing modes:", bin(bitmask)[2:].zfill(8))
@@ -149,37 +152,37 @@ class Instruction:
                 buffer += "Opcode: " + opcode + "\n"
                 break
         for addressing_mode in AddressingMode.__dict__.keys():
-            if AddressingMode.__dict__[addressing_mode] == self.addressing_mode1:
+            if AddressingMode.__dict__[addressing_mode] == self.srcMode:
                 buffer += "Addressing Mode 1: " + addressing_mode + "\n"
                 break
         for addressing_mode in AddressingMode.__dict__.keys():
-            if AddressingMode.__dict__[addressing_mode] == self.addressing_mode2:
+            if AddressingMode.__dict__[addressing_mode] == self.destMode:
                 buffer += "Addressing Mode 2: " + addressing_mode + "\n"
                 break
-        #buffer += "Addressing Mode 1: " + str(self.addressing_mode1) + "\n"
-        #buffer += "Addressing Mode 2: " + str(self.addressing_mode2) + "\n"
-        buffer += "Operand 1: " + str(self.operand1) + "\n"
-        buffer += "Operand 2: " + str(self.operand2) + "\n"
+        #buffer += "Addressing Mode 1: " + str(self.srcMode) + "\n"
+        #buffer += "Addressing Mode 2: " + str(self.destMode) + "\n"
+        buffer += "Operand 1: " + str(self.srcOperand) + "\n"
+        buffer += "Operand 2: " + str(self.destOperand) + "\n"
         return buffer
     
-    def encode(opcode, addressing_mode1, addressing_mode2, operand1, operand2):
+    def encode(opcode, srcMode, destMode, srcOperand, destOperand):
         ba = bytearray()
         ba.extend(opcode.to_bytes(1, byteorder="little"))
-        ba.extend(addressing_mode1.to_bytes(1, byteorder="little"))
-        ba.extend(addressing_mode2.to_bytes(1, byteorder="little"))
-        ba.extend(operand1.to_bytes(8, byteorder="little"))
-        ba.extend(operand2.to_bytes(8, byteorder="little"))
+        ba.extend(srcMode.to_bytes(1, byteorder="little"))
+        ba.extend(destMode.to_bytes(1, byteorder="little"))
+        ba.extend(srcOperand.to_bytes(8, byteorder="little"))
+        ba.extend(destOperand.to_bytes(8, byteorder="little"))
         return (ba)
 
     def decode(ba: bytearray):
         opcode = int.from_bytes(ba[0:1], byteorder="little")
-        addressing_mode1 = int.from_bytes(ba[1:2], byteorder="little")
-        addressing_mode2 = int.from_bytes(ba[2:3], byteorder="little")
-        operand1 = int.from_bytes(ba[3:11], byteorder="little")
-        operand2 = int.from_bytes(ba[11:19], byteorder="little")
-        return Instruction(opcode, addressing_mode1, addressing_mode2, operand1, operand2)
+        srcMode = int.from_bytes(ba[1:2], byteorder="little")
+        destMode = int.from_bytes(ba[2:3], byteorder="little")
+        srcOperand = int.from_bytes(ba[3:11], byteorder="little")
+        destOperand = int.from_bytes(ba[11:19], byteorder="little")
+        return Instruction(opcode, srcMode, destMode, srcOperand, destOperand)
 
-    def validate(opcode, addressing_mode1, addressing_mode2, operand1, operand2):
+    def validate(opcode, srcMode, destMode, srcOperand, destOperand):
         # check if it matches with instruction set
         pass    
 
@@ -187,16 +190,17 @@ class Instruction:
 # Define the instruction set
 instruction_set = {
     "MOV": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
-    "PUSH": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
-    "POP": Instruction(Opcode.MOV, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
+    "PUSH": Instruction(Opcode.PUSH, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
+    "POP": Instruction(Opcode.POP, AddressingMode.ALL, AddressingMode.NONE, Operand, Operand),
     "ADD": Instruction(Opcode.ADD, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "SUB": Instruction(Opcode.SUB, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "MUL": Instruction(Opcode.MUL, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "DIV": Instruction(Opcode.DIV, AddressingMode.ALL, AddressingMode.ALL_RW, Operand, Operand),
     "JMP": Instruction(Opcode.JMP, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
+    "CMP": Instruction(Opcode.CMP, AddressingMode.ALL_RW, AddressingMode.ALL_RW, Operand, Operand),
     "JEQ": Instruction(Opcode.JEQ, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
-    "CALL": Instruction(Opcode.JMP, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
-    "RET": Instruction(Opcode.JMP, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
+    "CALL": Instruction(Opcode.CALL, AddressingMode.ALL_RW, AddressingMode.NONE, Operand, Operand),
+    "RET": Instruction(Opcode.RET, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "RST": Instruction(Opcode.RST, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "NOP": Instruction(Opcode.NOP, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),
     "HLT": Instruction(Opcode.HLT, AddressingMode.NONE, AddressingMode.NONE, Operand, Operand),

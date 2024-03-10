@@ -116,33 +116,33 @@ def assemble_instruction(asm):
 
     # Default addressing modes and operands
     opcode: isa.Opcode = getattr(isa.Opcode, mnemonic)
-    addressing_mode1: isa.AddressingMode = isa.AddressingMode.NONE
-    addressing_mode2: isa.AddressingMode = isa.AddressingMode.NONE
-    operand1: isa.Operand = isa.Operand.NONE
-    operand2: isa.Operand = isa.Operand.NONE
+    srcMode: isa.AddressingMode = isa.AddressingMode.NONE
+    destMode: isa.AddressingMode = isa.AddressingMode.NONE
+    srcOperand: isa.Operand = isa.Operand.NONE
+    destOperand: isa.Operand = isa.Operand.NONE
 
-    # If one argument is provided, it is the source operand
+    # If only one argument is provided, it is the destination operand
     if len(args) == 1:
-        addressing_mode1 = isa.Operand.infer_addressing_mode(args[0])
-        addressing_mode2 = isa.AddressingMode.NONE
-        operand1: isa.Operand = isa.Operand.to_int(args[0])
-        operand2: isa.Operand = isa.Operand.NONE
+        srcMode = isa.AddressingMode.NONE
+        destMode = isa.Operand.infer_addressing_mode(args[0])
+        srcOperand: isa.Operand = isa.Operand.NONE
+        destOperand: isa.Operand = isa.Operand.to_int(args[0])
 
     elif len(args) == 2:
-        addressing_mode1 = isa.Operand.infer_addressing_mode(args[0])
-        addressing_mode2 = isa.Operand.infer_addressing_mode(args[1])
-        operand1: isa.Operand = isa.Operand.to_int(args[0])
-        operand2: isa.Operand = isa.Operand.to_int(args[1])
+        srcMode = isa.Operand.infer_addressing_mode(args[0])
+        destMode = isa.Operand.infer_addressing_mode(args[1])
+        srcOperand: isa.Operand = isa.Operand.to_int(args[0])
+        destOperand: isa.Operand = isa.Operand.to_int(args[1])
 
 
     #print ("OFFSET:", offset)
-    if addressing_mode1 == isa.AddressingMode.DIRECT: operand1 += offset
-    if addressing_mode2 == isa.AddressingMode.DIRECT: operand2 += offset
+    if srcMode == isa.AddressingMode.DIRECT: srcOperand += offset
+    if destMode == isa.AddressingMode.DIRECT: destOperand += offset
     
 
-    print("assemble:", opcode, addressing_mode1, addressing_mode2, operand1, operand2)
+    print("assemble:", opcode, srcMode, destMode, srcOperand, destOperand)
 
-    return (opcode, addressing_mode1, addressing_mode2, operand1, operand2)
+    return (opcode, srcMode, destMode, srcOperand, destOperand)
 
 
 def main():
