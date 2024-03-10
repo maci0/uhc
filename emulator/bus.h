@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// Memory regions
+// Memory Memory Map
 #define MEMORY_START 0x00000000 
 #define MEMORY_END 0x00FFFFFF // 16 MB RAM
 
