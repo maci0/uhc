@@ -1,9 +1,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
 
+extern bool debug;
 
 #define print_debug(...)                                                   \
     do                                                                     \

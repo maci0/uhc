@@ -10,8 +10,6 @@
 uint8_t mem[8388608];
 uint8_t mmio[65536];
 
-static bool debug = true;
-
 extern uint8_t itr;
 
 typedef enum

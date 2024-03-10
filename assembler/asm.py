@@ -30,6 +30,7 @@ def parse_file(filename):
     # Data structure to hold parsed instructions and labels
     instructions = []
     labels = {}
+    constants = {}
 
     # Parse each line
     for i, line in enumerate(lines):
@@ -45,10 +46,18 @@ def parse_file(filename):
                 offset = isa.Operand.to_int(parts[1])
                 #print("OFFSET:", offset)
                 continue
+            elif directive == ".EQU":
+                # Extract the constant name and value
+                constant_name, constant_value = parts[1], parts[2]
+                #constant_value = isa.Operand.to_int(constant_value_str)  # Convert the value to an integer
+                constants[constant_name] = constant_value
+                print(f"DIRECTIVE: {directive}, Name: {constant_name}, Value: {constant_value}")
+                continue
+
             if directive == ".END":
                 #print ("Encountered directive .END, ending assembly")
                 break
-
+            
         # Check if the line is a label
         if line.endswith(":"):
             label_name = line[:-1]  # Remove the colon
@@ -71,6 +80,8 @@ def parse_file(filename):
     # Now you have a list of instructions and a dictionary of labels with their associated instruction indices
     print("Instructions:", instructions)
     print("Labels:", labels)
+    print("Constants:", constants)
+
 
     parsed_instructions = []
 
@@ -82,6 +93,8 @@ def parse_file(filename):
         for op in ops:
             if op in labels:
                 operands.append(str(labels[op]))
+            elif op in constants:
+                operands.append(str(constants[op]))
             else:
                 operands.append(op)
         

@@ -3,13 +3,12 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "common.h"
+#include "isa.h"
 #include "cpu.h"
 #include "bus.h"
-
-static bool debug = true;
-
 
 // Global variables
 typedef uint64_t (*InstructionHandler)(Instruction instruction);

@@ -17,7 +17,7 @@
 static bool running = true;
 static bool benchmark = true;
 static bool quit = false;
-// static bool debug = true;
+bool debug = true;
 
 uint8_t filebuf[1024];
 

@@ -1,5 +1,4 @@
-#include <stdio.h>
-
+#include "common.h"
 #include "bus.h"
 #include "rom.h"
 
