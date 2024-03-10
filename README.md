@@ -1,3 +1,5 @@
-```sh setup-venv.sh
+```bash
+sh setup-venv.sh
 cd emulator
-sh build.sh```
+sh build.sh
+```
