@@ -10,14 +10,14 @@
 #include "video.h"
 
 #define BINFILE "test.bin"
-//#define CLOCK_FREQUENCY 1000000 // 1 MHz clock speed (example)
+// #define CLOCK_FREQUENCY 1000000 // 1 MHz clock speed (example)
 #define CLOCK_FREQUENCY 1 // 1 Hz clock speed (example)
 
 // Global state
 static bool running = true;
 static bool benchmark = true;
 static bool quit = false;
-//static bool debug = true;
+// static bool debug = true;
 
 uint8_t filebuf[1024];
 
@@ -72,7 +72,8 @@ int main(int argc, char *args[])
             CPU_DecodeInstruction();
             CPU_ExecuteInstruction();
             CPU_PrintRegisters();
-            //BUS_SendInterrupt(1);
+            MMIO_Writer();
+            // BUS_SendInterrupt(1);
         }
     }
 

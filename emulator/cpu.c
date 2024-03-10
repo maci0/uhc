@@ -75,6 +75,8 @@ Instruction instructionSet[256] = {
     [OP_RET] = {.opcode = OP_RET, .srcMode = AM_NONE, .destMode = AM_NONE, .srcOperand = false, .destOperand = false},
     [OP_RST] = {.opcode = OP_RST, .srcMode = AM_NONE, .destMode = AM_NONE, .srcOperand = false, .destOperand = false},
     [OP_HLT] = {.opcode = OP_HLT, .srcMode = AM_NONE, .destMode = AM_NONE, .srcOperand = false, .destOperand = false},
+    [OP_LDR] = {.opcode = OP_LDR, .srcMode = AM_DIRECT, .destMode = AM_REGISTER, .srcOperand = true, .destOperand = true},
+    [OP_STR] = {.opcode = OP_STR, .srcMode = AM_REGISTER, .destMode = AM_DIRECT, .srcOperand = true, .destOperand = true},
 
 };
 
@@ -260,6 +262,23 @@ static uint64_t ret(Instruction instruction)
     return pc;
 }
 
+static uint64_t ldr(Instruction instruction)
+{
+    print_debug("\n");
+    uint64_t value = BUS_Read(instruction.srcOperand);
+    CPU_SetValue(instruction.destMode, instruction.destOperand, value);
+    return value;
+}
+
+static uint64_t str(Instruction instruction)
+{
+    print_debug("\n");
+    uint64_t value = CPU_GetValue(instruction.srcMode, instruction.srcOperand);
+    BUS_Write(instruction.destOperand, value);
+    return value;
+}
+
+
 static uint64_t rst(Instruction instruction)
 {
     print_debug("\n");
@@ -422,6 +441,8 @@ void CPU_Init()
     instructionHandlers[OP_RST] = &rst;
 
     instructionHandlers[OP_HLT] = &hlt;
+    instructionHandlers[OP_LDR] = &ldr;
+    instructionHandlers[OP_STR] = &str;
 
     CPU_Reset();
 }

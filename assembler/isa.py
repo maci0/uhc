@@ -52,6 +52,9 @@ class Opcode:
     CALL: int = 200
     RET: int  = 201
 
+    LDR: int = 210
+    STR: int = 211
+
     # Memory Operations
     LD8:  int = 240
     LD16: int = 241

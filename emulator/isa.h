@@ -24,7 +24,11 @@ typedef enum
     OP_CMP = 0x10,
     OP_JEQ = 0x11,
     OP_CALL = 200,
+    
     OP_RET = 201,
+    
+    OP_LDR = 210,
+    OP_STR = 211,
     OP_RST = 254,
     OP_HLT = 255,
 } Opcode;
@@ -34,6 +38,7 @@ typedef enum
     AM_NONE = 0,
     AM_IMMEDIATE = 1,
     AM_REGISTER = 2,
+    AM_DIRECT = 4,
 } AddressingMode;
 
 

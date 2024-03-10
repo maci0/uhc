@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include "isa.h"
 
-
-
 void CPU_Init();
 void CPU_PrintRegisters();
 void CPU_FetchInstruction();

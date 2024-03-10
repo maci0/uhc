@@ -1,12 +1,6 @@
 nop
-call label1
-hlt
+mov 69 r1
+str r1 $0x01100001
 
-label2:
-    sub 1 r1
-    ret
-
-label1:
-    mov 70 r1
-    call label2
-    ret
+mov 1 r1
+str r1 $0x01100000
