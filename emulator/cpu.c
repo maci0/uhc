@@ -238,12 +238,9 @@ static uint64_t call(Instruction instruction)
 {
     print_debug("\n");
 
-    if (ra != 0)
-    {
-        print_error("currently only call depth of 1 allowed\n");
-        exit(EXIT_FAILURE);
-    }
     ra = pc;
+    sp -= 8;
+    BUS_Write(sp, ra);
     pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
 
     return 0;
@@ -252,6 +249,8 @@ static uint64_t call(Instruction instruction)
 static uint64_t ret(Instruction instruction)
 {
     print_debug("\n");
+    ra = BUS_Read(sp);
+    sp += 8;
     pc = ra;
     ra = 0;
     return 0;
