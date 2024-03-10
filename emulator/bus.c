@@ -15,18 +15,23 @@ static bool debug = true;
 extern uint8_t itr;
 
 // simulate a device that can write into a file
+// # MMIO_Writer output register: 0x01100008, enable register: 0x01100000
 void MMIO_Writer(){
+    //print_debug("current MMIO state: mmio[0]: %u, mmio[1]: %u\n ", mmio[0], mmio[8]);
     if (mmio[0] == 1){
-        print_debug("\n");
+        print_debug("mmio[8] was written to: %u\n", mmio[8]);
 
         FILE *file;
 
-        file = fopen("MMIO_Writer.txt", "w");
+        file = fopen("MMIO_Writer.txt", "ab");
+
         if (file == NULL) {
             printf("Error opening file!\n");
             return;
         }
-        fprintf(file, "%u", mmio[1]);
+        fprintf(file, "%c", mmio[8]);
+        fflush(file);
+
         fclose(file);
     }
     return;
