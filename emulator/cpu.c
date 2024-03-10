@@ -212,7 +212,7 @@ static uint64_t jmp(Instruction instruction)
 {
     print_debug("\n");
     pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
-    return 0;
+    return pc;
 }
 
 static uint64_t cmp(Instruction instruction)
@@ -223,7 +223,7 @@ static uint64_t cmp(Instruction instruction)
     uint64_t v2 = CPU_GetValue(instruction.destMode, instruction.destOperand);
     if (v1 == v2)
         sr.zero = 1;
-    return 0;
+    return sr.zero;
 }
 
 static uint64_t jeq(Instruction instruction)
@@ -233,7 +233,7 @@ static uint64_t jeq(Instruction instruction)
     {
         pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
     }
-    return 0;
+    return pc;
 }
 
 static uint64_t call(Instruction instruction)
@@ -245,7 +245,7 @@ static uint64_t call(Instruction instruction)
     sp -= 8;
     pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
 
-    return 0;
+    return pc;
 }
 
 static uint64_t ret(Instruction instruction)
@@ -256,7 +256,7 @@ static uint64_t ret(Instruction instruction)
     ra = BUS_Read(sp);
     pc = ra;
     ra = 0;
-    return 0;
+    return pc;
 }
 
 static uint64_t rst(Instruction instruction)
