@@ -40,7 +40,7 @@ static uint64_t pop(Instruction instruction);
 static uint64_t add(Instruction instruction);
 static uint64_t sub(Instruction instruction);
 static uint64_t mul(Instruction instruction);
-static uint64_t OP_div(Instruction instruction);
+static uint64_t _div(Instruction instruction);
 static uint64_t jmp(Instruction instruction);
 static uint64_t cmp(Instruction instruction);
 static uint64_t jeq(Instruction instruction);
@@ -50,6 +50,9 @@ static uint64_t rst(Instruction instruction);
 static uint64_t hlt(Instruction instruction);
 
 static void CPU_Reset();
+static void CPU_Halt();
+
+
 static void CPU_ValidateInstruction();
 
 Instruction instructionSet[256] = {
@@ -191,7 +194,7 @@ static uint64_t mul(Instruction instruction)
     return value;
 }
 
-static uint64_t OP_div(Instruction instruction)
+static uint64_t _div(Instruction instruction)
 {
     print_debug("\n");
 
@@ -406,7 +409,7 @@ void CPU_Init()
     instructionHandlers[OP_ADD] = &add;
     instructionHandlers[OP_SUB] = &sub;
     instructionHandlers[OP_MUL] = &mul;
-    instructionHandlers[OP_DIV] = &OP_div;
+    instructionHandlers[OP_DIV] = &_div;
     instructionHandlers[OP_CMP] = &cmp;
     instructionHandlers[OP_JMP] = &jmp;
     instructionHandlers[OP_JEQ] = &jeq;
