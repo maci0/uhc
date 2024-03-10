@@ -8,6 +8,9 @@
 #include "cpu.h"
 #include "bus.h"
 
+static bool debug = true;
+
+
 // Global variables
 typedef uint64_t (*InstructionHandler)(Instruction instruction);
 static InstructionHandler instructionHandlers[256]; //
@@ -139,11 +142,11 @@ static uint64_t mov(Instruction instruction)
 
 static uint64_t push(Instruction instruction)
 {
-    sp -= 8;
     uint64_t value = CPU_GetValue(instruction.srcMode, instruction.srcOperand);
 
     print_debug("SP: %lu value: %lu\n", sp, value);
     BUS_Write(sp, value);
+    sp -= 8;
 
     return value;
 }
@@ -151,10 +154,9 @@ static uint64_t push(Instruction instruction)
 static uint64_t pop(Instruction instruction)
 {
     print_debug("\n");
+    sp += 8;
     uint64_t value = BUS_Read(sp);
     CPU_SetValue(instruction.destMode, instruction.destOperand, value);
-    sp += 8;
-
     return value;
 }
 
@@ -239,8 +241,8 @@ static uint64_t call(Instruction instruction)
     print_debug("\n");
 
     ra = pc;
-    sp -= 8;
     BUS_Write(sp, ra);
+    sp -= 8;
     pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
 
     return 0;
@@ -249,8 +251,9 @@ static uint64_t call(Instruction instruction)
 static uint64_t ret(Instruction instruction)
 {
     print_debug("\n");
-    ra = BUS_Read(sp);
     sp += 8;
+
+    ra = BUS_Read(sp);
     pc = ra;
     ra = 0;
     return 0;

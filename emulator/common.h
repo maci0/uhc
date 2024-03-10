@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-bool debug = true;
 
 #define print_debug(...)                                                   \
     do                                                                     \

@@ -1,3 +1,4 @@
+nop
 call label1
 hlt
 
