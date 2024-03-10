@@ -20,7 +20,8 @@ static uint8_t ir[INSTRUCTION_WIDTH]; // Instruction Register - hold the current
 static uint64_t pc;                   // program counter
 static uint64_t sp;                   // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down
 static uint64_t ra;                   // return address register, also known as link register
-// static uint64_t itr;                    // interrupt register
+uint8_t itr = 0;                          // interrupt register
+//static uint64_t itr;                    // interrupt register
 //  Status register
 static struct flags
 {
@@ -337,6 +338,7 @@ void CPU_DecodeInstruction()
 
 uint64_t CPU_ExecuteInstruction()
 {
+    if (itr == 1) {print_info("INTERRUPT"); exit (EXIT_SUCCESS);}
     pc++;
     uint8_t index = instruction.opcode;
 

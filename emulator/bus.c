@@ -12,6 +12,8 @@ uint8_t rom[8192];
 
 static bool debug = true;
 
+extern uint8_t itr;
+
 
 static bool is_in_range(uint64_t address, uint64_t start, uint64_t end)
 {
@@ -45,5 +47,10 @@ uint64_t BUS_Write(uint64_t address, uint64_t data)
     print_debug("writing data to address 0x%lx, %lu\n", address, data);
     uint64_t *location = BUS_Access(address);
     *location = data;
+    return 0;
+}
+
+uint64_t BUS_SendInterrupt(uint8_t interrupt){
+    itr = interrupt;
     return 0;
 }

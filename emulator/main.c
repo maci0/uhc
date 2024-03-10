@@ -72,6 +72,7 @@ int main(int argc, char *args[])
             CPU_DecodeInstruction();
             CPU_ExecuteInstruction();
             CPU_PrintRegisters();
+            //BUS_SendInterrupt(1);
         }
     }
 

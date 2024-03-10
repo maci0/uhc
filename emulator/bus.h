@@ -15,5 +15,6 @@
 
 uint64_t BUS_Read(uint64_t address);
 uint64_t BUS_Write(uint64_t buf, uint64_t address);
+uint64_t BUS_SendInterrupt(uint8_t interrupt);
 
 #endif // BUS_H
