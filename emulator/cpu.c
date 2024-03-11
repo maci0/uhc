@@ -19,8 +19,9 @@ static uint8_t ir[INSTRUCTION_WIDTH]; // Instruction Register - hold the current
 static uint64_t pc;                   // program counter
 static uint64_t sp;                   // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down
 static uint64_t ra;                   // return address register, also known as link register
-uint8_t itr = 0;                          // interrupt register
-//static uint64_t itr;                    // interrupt register
+uint8_t itr = 0;                      // interrupt register
+static uint64_t fp;                   // frame pointer
+
 //  Status register
 static struct flags
 {
@@ -54,9 +55,24 @@ static uint64_t hlt(Instruction instruction);
 
 static void CPU_Reset();
 static void CPU_Halt();
+static void CPU_PushStack(uint64_t value);
+static uint64_t CPU_PopStack();
+
 
 
 static void CPU_ValidateInstruction();
+
+void CPU_PushStack(uint64_t value) {
+    print_debug("\n");
+    BUS_Write(sp, value);
+    sp -= 8;
+}
+
+uint64_t CPU_PopStack() {
+    print_debug("\n");
+    sp += 8;
+    return BUS_Read(sp);
+}
 
 uint64_t CPU_GetValue(uint8_t addressing_mode, uint64_t operand)
 {
@@ -95,7 +111,7 @@ uint64_t CPU_SetValue(uint8_t addressing_mode, uint64_t operand, uint64_t value)
         break;
     case AM_REGISTER:
         if (operand == 0)
-            break; // r0 is always 0 and can not be set to something else
+            break; // r0 is always 0 and can not be set to something else -- this can be used to discard items from the stack
         registers[operand] = value;
         break;
     default:
@@ -123,22 +139,19 @@ static uint64_t mov(Instruction instruction)
 
 static uint64_t push(Instruction instruction)
 {
-    uint64_t value = CPU_GetValue(instruction.srcMode, instruction.srcOperand);
+    print_debug("\n");
+    uint64_t data = CPU_GetValue(instruction.destMode, instruction.destOperand);
+    CPU_PushStack(data);
 
-    print_debug("SP: %lu value: %lu\n", sp, value);
-    BUS_Write(sp, value);
-    sp -= 8;
-
-    return value;
+    return data;
 }
 
 static uint64_t pop(Instruction instruction)
 {
     print_debug("\n");
-    sp += 8;
-    uint64_t value = BUS_Read(sp);
-    CPU_SetValue(instruction.destMode, instruction.destOperand, value);
-    return value;
+    uint64_t data = CPU_PopStack();
+    CPU_SetValue(instruction.destMode, instruction.destOperand, data);
+    return data;
 }
 
 static uint64_t add(Instruction instruction)
@@ -222,8 +235,8 @@ static uint64_t call(Instruction instruction)
     print_debug("\n");
 
     ra = pc;
-    BUS_Write(sp, ra);
-    sp -= 8;
+    CPU_PushStack(ra); // Push Return Address to Stack
+
     pc = CPU_GetValue(instruction.destMode, instruction.destOperand);
 
     return pc;
@@ -232,11 +245,12 @@ static uint64_t call(Instruction instruction)
 static uint64_t ret(Instruction instruction)
 {
     print_debug("\n");
-    sp += 8;
 
-    ra = BUS_Read(sp);
+    ra = CPU_PopStack(); // Pop Return Address from Stack
+
     pc = ra;
     ra = 0;
+
     return pc;
 }
 
@@ -355,8 +369,8 @@ uint64_t CPU_ExecuteInstruction()
 
 void CPU_PrintRegisters()
 {
-    printf("PC: %lu | SP: %lu | RA: %lu | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
-           pc, sp, ra,
+    printf("PC: %lu | SP: %lu | FP: %lu | RA: %lu | R[0-10]: %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu | %lu\n",
+           pc, sp, fp, ra,
            registers[0], registers[1], registers[2], registers[3], registers[4],
            registers[5], registers[6], registers[7], registers[8], registers[9], registers[10]);
 
@@ -392,8 +406,10 @@ void CPU_Reset()
     sr.overflow = 0;
 
     sp = 8000; // start of the stack pointer
+    fp = 0;
     ra = 0;
     pc = 0;
+    itr = 0;
     memset(registers, 0, sizeof(registers));
     // memset(stack, 0, sizeof(stack));
     // memset(mem, 0, sizeof(mem)); // CPU can only access memory through the bus

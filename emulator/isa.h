@@ -52,8 +52,8 @@ typedef struct {
 Instruction instructionSet[256] = {
     [OP_NOP] = {.opcode = OP_NOP, .srcMode = AM_NONE, .destMode = AM_NONE, .srcOperand = false, .destOperand = false},
     [OP_MOV] = {.opcode = OP_MOV, .srcMode = AM_IMMEDIATE | AM_REGISTER, .destMode = AM_REGISTER, .srcOperand = true, .destOperand = true},
-    [OP_PUSH] = {.opcode = OP_PUSH, .srcMode = AM_REGISTER, .destMode = AM_NONE, .srcOperand = true, .destOperand = false},
     [OP_PUSH] = {.opcode = OP_PUSH, .srcMode = AM_NONE, .destMode = AM_REGISTER, .srcOperand = false, .destOperand = true},
+    [OP_POP] = {.opcode = OP_POP, .srcMode = AM_NONE, .destMode = AM_REGISTER, .srcOperand = false, .destOperand = true},
     [OP_ADD] = {.opcode = OP_ADD, .srcMode = AM_IMMEDIATE | AM_REGISTER, .destMode = AM_REGISTER, .srcOperand = true, .destOperand = true},
     [OP_SUB] = {.opcode = OP_SUB, .srcMode = AM_IMMEDIATE | AM_REGISTER, .destMode = AM_REGISTER, .srcOperand = true, .destOperand = true},
     [OP_MUL] = {.opcode = OP_MUL, .srcMode = AM_IMMEDIATE | AM_REGISTER, .destMode = AM_REGISTER, .srcOperand = true, .destOperand = true},
