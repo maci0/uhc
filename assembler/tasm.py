@@ -2,6 +2,7 @@
 import isa
 import argparse
 
+# tasm - the tiny assembler
 
 parser = argparse.ArgumentParser(
     description="Assembler script to process assembly files."

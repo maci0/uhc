@@ -14,13 +14,23 @@ E[ROM]
 F[MMIO]
 G[Interrupts]
 H[Clock]
+I[Console device]
+J[Fileout device]
+K[File]
+L[User]
 
 B <--> A
 D <--> A
-E <--> A
+E --> A
 F <--> A
 G -->  A
 H --> B
+A <--> I <--> L
+A --> J --> K
+I --> G
+
+
+
 
 ```
 
