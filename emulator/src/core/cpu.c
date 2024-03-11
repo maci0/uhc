@@ -17,7 +17,7 @@ static InstructionHandler instructionHandlers[256]; //
 static uint64_t registers[64];        // General Purpose Registers
 static uint8_t ir[INSTRUCTION_WIDTH]; // Instruction Register - hold the current instruction
 static uint64_t pc;                   // program counter
-static uint64_t sp;                   // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down
+static uint64_t sp;                   // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down -- mapped to r65
 static uint64_t ra;                   // return address register, also known as link register
 uint8_t itr = 0;                      // interrupt register
 static uint64_t fp;                   // frame pointer
@@ -58,17 +58,17 @@ static void CPU_Halt();
 static void CPU_PushStack(uint64_t value);
 static uint64_t CPU_PopStack();
 
-
-
 static void CPU_ValidateInstruction();
 
-void CPU_PushStack(uint64_t value) {
+void CPU_PushStack(uint64_t value)
+{
     print_debug("\n");
     BUS_Write(sp, value);
     sp -= 8;
 }
 
-uint64_t CPU_PopStack() {
+uint64_t CPU_PopStack()
+{
     print_debug("\n");
     sp += 8;
     return BUS_Read(sp);
@@ -87,6 +87,10 @@ uint64_t CPU_GetValue(uint8_t addressing_mode, uint64_t operand)
     case AM_REGISTER:
         if (operand == 0)
             return 0; // r0 is always 0
+        if (operand == 65)
+            return sp;
+        if (operand > 65)
+            print_error("Invalid Register\n");
         else
             print_debug("return operand: %lu\n", registers[operand]);
         return registers[operand];
@@ -112,7 +116,12 @@ uint64_t CPU_SetValue(uint8_t addressing_mode, uint64_t operand, uint64_t value)
     case AM_REGISTER:
         if (operand == 0)
             break; // r0 is always 0 and can not be set to something else -- this can be used to discard items from the stack
-        registers[operand] = value;
+        if (operand == 65)
+            sp = value;
+        if (operand > 65)
+            print_error("Invalid Register\n");
+        else
+            registers[operand] = value;
         break;
     default:
         print_error("Invalid Addressing mode for Operand\n");
@@ -270,7 +279,6 @@ static uint64_t str(Instruction instruction)
     return value;
 }
 
-
 static uint64_t rst(Instruction instruction)
 {
     print_debug("\n");
@@ -347,7 +355,11 @@ void CPU_DecodeInstruction()
 
 uint64_t CPU_ExecuteInstruction()
 {
-    if (itr == 1) {print_info("INTERRUPT"); exit (EXIT_SUCCESS);}
+    if (itr == 1)
+    {
+        print_info("INTERRUPT");
+        exit(EXIT_SUCCESS);
+    }
     pc++;
     uint8_t index = instruction.opcode;
 
@@ -383,14 +395,14 @@ void CPU_PrintRegisters()
     printf(" | IR: %u %u %u %lu %lu\n", ir[0], ir[1], ir[2], *(uint64_t *)(ir + 3), *(uint64_t *)(ir + 11));
 }
 
-
 void CPU_Halt()
 {
     print_debug("\n");
     exit(EXIT_SUCCESS);
 }
 
-void CPU_Pause(){
+void CPU_Pause()
+{
     return;
 }
 
@@ -439,17 +451,15 @@ void CPU_Init()
     CPU_Reset();
 }
 
-void CPU_Tick(){
-    //CPU_CheckInterrupts();
+void CPU_Tick()
+{
+    // CPU_CheckInterrupts();
 
     CPU_FetchInstruction();
     CPU_DecodeInstruction();
     CPU_ValidateInstruction();
     CPU_ExecuteInstruction();
 }
-
-
-
 
 /*void print_state()
 {

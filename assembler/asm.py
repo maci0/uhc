@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 
 def parse_file(filename):
-    offset=0
+    offset = 0
 
     assembly_code = filename.read()
     # Split the code into lines
@@ -32,6 +32,9 @@ def parse_file(filename):
     labels = {}
     constants = {}
 
+    # fixed constants
+    constants["SP"] = "R65"
+
     # Parse each line
     for i, line in enumerate(lines):
         if not line:
@@ -42,20 +45,25 @@ def parse_file(filename):
             parts = line.split()
             directive = parts[0]
             if directive == ".ORG":
-                #print ("DIRECTIVE:", directive)
+                # print ("DIRECTIVE:", directive)
                 offset = isa.Operand.to_int(parts[1])
-                #print("OFFSET:", offset)
+                # print("OFFSET:", offset)
                 continue
             elif directive == ".EQU":
                 # Extract the constant name and value
                 constant_name, constant_value = parts[1], parts[2]
+                if constant_name in constant_value:
+                    print("Error: constant already defined")
+                    return None
                 constants[constant_name] = constant_value
-                print(f"DIRECTIVE: {directive}, Name: {constant_name}, Value: {constant_value}")
+                print(
+                    f"DIRECTIVE: {directive}, Name: {constant_name}, Value: {constant_value}"
+                )
                 continue
             if directive == ".END":
-                #print ("Encountered directive .END, ending assembly")
+                # print ("Encountered directive .END, ending assembly")
                 break
-            
+
         # Check if the line is a label
         if line.endswith(":"):
             label_name = line[:-1]  # Remove the colon
@@ -65,9 +73,7 @@ def parse_file(filename):
                 print("Error: Label already defined")
                 return None
 
-            labels[label_name] = len(
-                instructions
-            )  # Associate label with the next instruction's index
+            labels[label_name] = len(instructions)
         else:
             # Split the line into components (instruction and operands)
             parts = line.split()
@@ -79,7 +85,6 @@ def parse_file(filename):
     print("Instructions:", instructions)
     print("Labels:", labels)
     print("Constants:", constants)
-
 
     parsed_instructions = []
 
@@ -95,12 +100,12 @@ def parse_file(filename):
                 operands.append(str(constants[op]))
             else:
                 operands.append(op)
-        
+
         # Print the instruction and operands
-        print(f"Instruction: {mnemonic}, Operands: {', '.join(operands)}, Offset: {offset}")
+        print(
+            f"Instruction: {mnemonic}, Operands: {', '.join(operands)}, Offset: {offset}"
+        )
         parsed_instructions.append((mnemonic, operands, offset))
-
-
 
     # Find DB and store the value in memory
     # Find DW and store the value in memory
@@ -109,11 +114,7 @@ def parse_file(filename):
     # Find MACRO and define a macro
     # Find ENDM and end the macro
     # Find IF and check the condition
-        
-        
 
-
-        
     return parsed_instructions
 
 
@@ -143,11 +144,11 @@ def assemble_instruction(asm):
         srcOperand: isa.Operand = isa.Operand.to_int(args[0])
         destOperand: isa.Operand = isa.Operand.to_int(args[1])
 
-
-    #print ("OFFSET:", offset)
-    if srcMode == isa.AddressingMode.DIRECT: srcOperand += offset
-    if destMode == isa.AddressingMode.DIRECT: destOperand += offset
-    
+    # print ("OFFSET:", offset)
+    if srcMode == isa.AddressingMode.DIRECT:
+        srcOperand += offset
+    if destMode == isa.AddressingMode.DIRECT:
+        destOperand += offset
 
     print("assemble:", opcode, srcMode, destMode, srcOperand, destOperand)
 
@@ -161,7 +162,7 @@ def main():
     output_file = open(args.output, "wb")
 
     # Write initial NOP
-    #output_file.write(isa.Instruction.encode(isa.Opcode.NOP, isa.AddressingMode.NONE, isa.AddressingMode.NONE, isa.Operand.NONE, isa.Operand.NONE))
+    # output_file.write(isa.Instruction.encode(isa.Opcode.NOP, isa.AddressingMode.NONE, isa.AddressingMode.NONE, isa.Operand.NONE, isa.Operand.NONE))
 
     for instruction in parse_file(input_file):
         opcode, am1, am2, op1, op2 = assemble_instruction(instruction)
@@ -169,7 +170,15 @@ def main():
         print(isa.Instruction.encode(opcode, am1, am2, op1, op2))
 
     # Write trailing HLT
-    output_file.write(isa.Instruction.encode(isa.Opcode.HLT, isa.AddressingMode.NONE, isa.AddressingMode.NONE, isa.Operand.NONE, isa.Operand.NONE))
+    output_file.write(
+        isa.Instruction.encode(
+            isa.Opcode.HLT,
+            isa.AddressingMode.NONE,
+            isa.AddressingMode.NONE,
+            isa.Operand.NONE,
+            isa.Operand.NONE,
+        )
+    )
 
     # Close files
     input_file.close()
