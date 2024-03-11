@@ -2,6 +2,28 @@
 
 This document outlines the Instruction Set Architecture (ISA) defined in the `ISA_H` and `BUS_H` header files, detailing the opcode specifications, addressing modes, and the structure of instructions within this custom architecture. Additionally, it includes a brief overview of the system bus interface and the memory model.
 
+## Emulator Architecture
+
+```mermaid
+graph TD
+
+A[Bus]
+B[CPU]
+D[RAM]
+E[ROM]
+F[MMIO]
+G[Interrupts]
+H[Clock]
+
+B <--> A
+D <--> A
+E <--> A
+F <--> A
+G -->  A
+H --> A
+
+```
+
 ## Overview
 
 This ISA defines a set of operations that can be performed by a processor, including arithmetic operations, data movement, control flow instructions, and system instructions. Instructions are encoded with varying widths for opcodes, addressing modes, and operands to accommodate different types of operations.

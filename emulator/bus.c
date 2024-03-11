@@ -5,16 +5,16 @@
 
 #include "bus.h"
 #include "rom.h"
+#include "ram.h"
 #include "common.h"
 
-uint8_t mem[8388608];
 uint8_t mmio[65536];
 
-extern uint8_t itr;
+extern uint8_t itr; // The CPUs interrupt register
 
 typedef enum
 {
-    DEVICE_MEMORY,
+    DEVICE_RAM,
     DEVICE_ROM,
     DEVICE_MMIO,
     DEVICE_UNKNOWN // For error handling
@@ -53,9 +53,9 @@ static bool is_in_range(uint64_t address, uint64_t start, uint64_t end)
 
 uint64_t BUS_Map(uint64_t address)
 {
-    if (is_in_range(address, MEMORY_START, MEMORY_END))
+    if (is_in_range(address, RAM_START, RAM_END))
     {
-        return DEVICE_MEMORY;
+        return DEVICE_RAM;
     }
     else if (is_in_range(address, ROM_START, ROM_END))
     {
@@ -76,8 +76,8 @@ uint64_t BUS_Read(uint64_t address)
     uint64_t device = BUS_Map(address);
     switch (device)
     {
-    case DEVICE_MEMORY:
-        return *((uint64_t *)&mem[address - MEMORY_START]);
+    case DEVICE_RAM:
+        return RAM_Read(address - RAM_START);
         break;
     case DEVICE_ROM:
         return ROM_Read(address - ROM_START);
@@ -96,8 +96,8 @@ uint64_t BUS_Write(uint64_t address, uint64_t data)
     uint64_t device = BUS_Map(address);
     switch (device)
     {
-    case DEVICE_MEMORY:
-        *((uint64_t *)&mem[address - MEMORY_START]) = data;
+    case DEVICE_RAM:
+        return RAM_Write(address - RAM_START, data);
         break;
     case DEVICE_ROM:
         exit(EXIT_FAILURE);
