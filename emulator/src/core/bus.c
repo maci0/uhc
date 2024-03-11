@@ -7,6 +7,7 @@
 #include "../memory/rom.h"
 #include "../memory/ram.h"
 #include "../common/common.h"
+#include "../devices/console.h"
 
 uint8_t mmio[65536];
 
@@ -17,6 +18,7 @@ typedef enum
     DEVICE_RAM,
     DEVICE_ROM,
     DEVICE_MMIO,
+    DEVICE_CONSOLE,
     DEVICE_UNKNOWN // For error handling
 } DeviceType;
 
@@ -65,6 +67,10 @@ uint64_t BUS_Map(uint64_t address)
     {
         return DEVICE_MMIO;
     }
+    else if (is_in_range(address, CONSOLE_START, CONSOLE_END))
+    {
+        return DEVICE_CONSOLE;
+    }
     else
     {
         return DEVICE_UNKNOWN;
@@ -85,6 +91,9 @@ uint64_t BUS_Read(uint64_t address)
     case DEVICE_MMIO:
         return *((uint64_t *)&mmio[address - MMIO_START]);
         break;
+    case DEVICE_CONSOLE:
+        return CON_Read((address - CONSOLE_START));
+        break;
     default:
         print_error("Unsupported address: 0x%lx\n", address);
         exit(EXIT_FAILURE);
@@ -104,6 +113,9 @@ uint64_t BUS_Write(uint64_t address, uint64_t data)
         break;
     case DEVICE_MMIO:
         *((uint64_t *)&mmio[address - MMIO_START]) = data;
+        break;
+    case DEVICE_CONSOLE:
+        CON_Write((address - CONSOLE_START), data);
         break;
     default:
         print_error("Unsupported address: 0x%lx\n", address);

@@ -2,6 +2,7 @@
 #define CPU_H
 
 void CPU_Init();
+void CPU_Tick();
 void CPU_PrintRegisters();
 void CPU_FetchInstruction();
 void CPU_DecodeInstruction();

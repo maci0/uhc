@@ -343,8 +343,6 @@ void CPU_DecodeInstruction()
     instruction.srcOperand = *(uint64_t *)(ir + 3);
     instruction.destOperand = *(uint64_t *)(ir + 11);
     print_debug("%u %u %u %lu %lu\n", instruction.opcode, instruction.srcMode, instruction.destMode, instruction.srcOperand, instruction.destOperand);
-
-    CPU_ValidateInstruction();
 }
 
 uint64_t CPU_ExecuteInstruction()
@@ -439,6 +437,15 @@ void CPU_Init()
     instructionHandlers[OP_STR] = &str;
 
     CPU_Reset();
+}
+
+void CPU_Tick(){
+    //CPU_CheckInterrupts();
+
+    CPU_FetchInstruction();
+    CPU_DecodeInstruction();
+    CPU_ValidateInstruction();
+    CPU_ExecuteInstruction();
 }
 
 

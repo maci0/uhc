@@ -7,7 +7,7 @@
 #include "common/common.h"
 #include "core/cpu.h"
 #include "core/bus.h"
-#include "devices/video.h"
+#include "devices/console.h"
 #include "core/clock.h"
 
 #define BINFILE "test.bin"
@@ -49,17 +49,17 @@ int main(int argc, char *args[])
 
     loadfile();
     CPU_Init();
+    CON_Init();
 
     while (!quit)
     {
         if (running)
         {
-            CL_Tick();
-            CPU_FetchInstruction();
-            CPU_DecodeInstruction();
-            CPU_ExecuteInstruction();
-            CPU_PrintRegisters();
-            MMIO_Writer();
+            CL_Tick(); // Clock tick
+            CPU_Tick(); // CPU tick
+            CPU_PrintRegisters(); // Print CPU registers
+            //MMIO_Writer();
+            CON_Tick(); // Console tick
             // BUS_SendInterrupt(1);
         }
     }

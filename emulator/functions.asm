@@ -12,5 +12,5 @@ label1:
     mov 70 r1
     push r1
     call label2
-    ;pop r5
+    pop r5
     ret

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// Memory Memory Map
+// Memory Layout
 #define RAM_START 0x00000000 
 #define RAM_END 0x00FFFFFF // 16 MB RAM
 
@@ -12,6 +12,12 @@
 
 #define MMIO_START 0x01100000  
 #define MMIO_END 0x0110FFFF // 64 KB MMIO
+
+#define CONSOLE_START 0xC011501E
+#define CONSOLE_CONTROL_REGISTER CONSOLE_START
+#define CONSOLE_DATA_REGISTER (CONSOLE_CONTROL_REGISTER + 8)
+#define CONSOLE_END CONSOLE_DATA_REGISTER
+
 
 uint64_t BUS_Read(uint64_t address);
 uint64_t BUS_Write(uint64_t buf, uint64_t address);
