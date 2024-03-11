@@ -1,5 +1,5 @@
-#include "common.h"
-#include "bus.h"
+#include "../common/common.h"
+#include "../core/bus.h"
 #include "rom.h"
 
 static uint8_t rom[1048576]; // 1 Megabyte

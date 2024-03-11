@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "common.h"
-#include "isa.h"
+#include "../common/common.h"
+#include "../common/isa.h"
 #include "cpu.h"
 #include "bus.h"
 

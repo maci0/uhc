@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bus.h"
+#include "../core/bus.h"
 #include "../memory/rom.h"
 #include "../memory/ram.h"
-#include "common.h"
+#include "../common/common.h"
 
 uint8_t mmio[65536];
 

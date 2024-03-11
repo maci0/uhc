@@ -4,18 +4,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "common.h"
-#include "cpu.h"
-#include "bus.h"
-#include "video.h"
+#include "common/common.h"
+#include "core/cpu.h"
+#include "core/bus.h"
+#include "devices/video.h"
+#include "core/clock.h"
 
 #define BINFILE "test.bin"
-// #define CLOCK_FREQUENCY 1000000 // 1 MHz clock speed (example)
-#define CLOCK_FREQUENCY 1 // 1 Hz clock speed (example)
 
 // Global state
 static bool running = true;
-static bool benchmark = true;
 static bool quit = false;
 bool debug = true;
 
@@ -48,26 +46,15 @@ void loadfile()
 
 int main(int argc, char *args[])
 {
-    clock_t start_clock = clock();
-    clock_t next_clock_pulse = start_clock + CLOCKS_PER_SEC / CLOCK_FREQUENCY;
 
     loadfile();
     CPU_Init();
 
     while (!quit)
     {
-        if (!benchmark)
-        {
-            running = false;
-            clock_t current_clock = clock();
-            if (current_clock >= next_clock_pulse)
-            {
-                running = true;
-                next_clock_pulse += CLOCKS_PER_SEC / CLOCK_FREQUENCY;
-            }
-        }
         if (running)
         {
+            CL_Tick();
             CPU_FetchInstruction();
             CPU_DecodeInstruction();
             CPU_ExecuteInstruction();
