@@ -2,6 +2,6 @@
 
 #include "video.h"
 
-void VGA_Init(){
+void VGA_Init() {
     exit (0);
 }

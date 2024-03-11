@@ -55,14 +55,14 @@ void CON_Init()
     // Open the input pipe
     /* mkfifo(input_file, 0666); */
 
-/*
-    tmp_output_fd = fopen(tmp_output_file, "a");
-    if (tmp_output_fd == NULL)
-    {
-        perror("Failed to open file");
-        fclose(tmp_output_fd);
-        exit(EXIT_FAILURE);
-    }*/
+    /*
+        tmp_output_fd = fopen(tmp_output_file, "a");
+        if (tmp_output_fd == NULL)
+        {
+            perror("Failed to open file");
+            fclose(tmp_output_fd);
+            exit(EXIT_FAILURE);
+        }*/
 
     ccr.ENABLED = 1;
 }
@@ -73,7 +73,7 @@ void CON_Write(uint64_t address, uint64_t data)
     // If write address is 8, this is the cdr
     print_debug("address: %lu, data: %lu\n", address, data);
     if (address == 8)
-    *((uint64_t *)&cdr[0]) = data;
+        *((uint64_t *)&cdr[0]) = data;
 
     if (address == 0 && data == 1)
         ccr.TXRDY = 1;
@@ -116,7 +116,7 @@ void CON_In()
         close(interrupt_file);
     }
 
-    
+
     /*in_fd = open(input_file, O_RDONLY | O_SYNC);
     if (in_fd == -1)
     {

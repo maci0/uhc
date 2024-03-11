@@ -24,9 +24,9 @@ typedef enum
     OP_CMP = 0x10,
     OP_JEQ = 0x11,
     OP_CALL = 200,
-    
+
     OP_RET = 201,
-    
+
     OP_LDR = 210,
     OP_STR = 211,
     OP_RST = 254,

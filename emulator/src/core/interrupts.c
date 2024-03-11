@@ -1,3 +1,5 @@
 
 static int ivt;
-int empty(){return ivt =0 ;}
+int empty() {
+    return ivt =0 ;
+}

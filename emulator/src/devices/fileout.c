@@ -6,7 +6,7 @@
 #include "fileout.h"
 
 
-// enable register: 0x01100000 | output register: 0x01100008, 
+// enable register: 0x01100000 | output register: 0x01100008,
 // mapped to        0          |                  8
 
 static uint8_t registers[16];
@@ -19,7 +19,7 @@ void FO_Write(uint64_t address, uint64_t data)
     // If write address is 8, this is the cdr
     print_debug("address: %lu, data: %lu\n", address, data);
     if (address == 8)
-    *((uint64_t *)&registers[8]) = data;
+        *((uint64_t *)&registers[8]) = data;
 
     // if the enable register is written to, set the enable bit
     if (address == 0 && data == 1)

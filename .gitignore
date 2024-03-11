@@ -14,3 +14,4 @@ emulator/uhc.srctrlprj
 emulator/tisc-emu
 emulator/tisc-emu-gui
 tmp
+*.orig

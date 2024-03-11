@@ -4,13 +4,13 @@
 #include <stdint.h>
 
 // Memory Layout
-#define RAM_START 0x00000000 
+#define RAM_START 0x00000000
 #define RAM_END 0x00FFFFFF // 16 MB RAM
 
-#define ROM_START 0x01000000 
+#define ROM_START 0x01000000
 #define ROM_END 0x010FFFFF // 1 MB ROM
 
-#define MMIO_START 0x01100000  
+#define MMIO_START 0x01100000
 #define MMIO_END 0x0110FFFF // 64 KB MMIO
 
 #define CONSOLE_START 0xC011501E
