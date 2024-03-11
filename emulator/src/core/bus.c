@@ -8,8 +8,7 @@
 #include "../memory/ram.h"
 #include "../common/common.h"
 #include "../devices/console.h"
-
-uint8_t mmio[65536];
+#include "../devices/fileout.h"
 
 extern uint8_t itr; // The CPUs interrupt register
 
@@ -19,34 +18,10 @@ typedef enum
     DEVICE_ROM,
     DEVICE_MMIO,
     DEVICE_CONSOLE,
+    DEVICE_FILEOUT,
     DEVICE_UNKNOWN // For error handling
 } DeviceType;
 
-// simulate a device that can write into a file
-// # MMIO_Writer output register: 0x01100008, enable register: 0x01100000
-void MMIO_Writer()
-{
-    // print_debug("current MMIO state: mmio[0]: %u, mmio[1]: %u\n ", mmio[0], mmio[8]);
-    if (mmio[0] == 1)
-    {
-        print_debug("mmio[8] was written to: %u\n", mmio[8]);
-
-        FILE *file;
-
-        file = fopen("MMIO_Writer.txt", "ab");
-
-        if (file == NULL)
-        {
-            printf("Error opening file!\n");
-            return;
-        }
-        fprintf(file, "%c", mmio[8]);
-        fflush(file);
-
-        fclose(file);
-    }
-    return;
-}
 
 static bool is_in_range(uint64_t address, uint64_t start, uint64_t end)
 {
@@ -63,9 +38,9 @@ uint64_t BUS_Map(uint64_t address)
     {
         return DEVICE_ROM;
     }
-    else if (is_in_range(address, MMIO_START, MMIO_END))
+    else if (is_in_range(address, FILEOUT_START, FILEOUT_END))
     {
-        return DEVICE_MMIO;
+        return DEVICE_FILEOUT;
     }
     else if (is_in_range(address, CONSOLE_START, CONSOLE_END))
     {
@@ -88,8 +63,8 @@ uint64_t BUS_Read(uint64_t address)
     case DEVICE_ROM:
         return ROM_Read(address - ROM_START);
         break;
-    case DEVICE_MMIO:
-        return *((uint64_t *)&mmio[address - MMIO_START]);
+    case DEVICE_FILEOUT:
+        return FO_Read((address - FILEOUT_START));
         break;
     case DEVICE_CONSOLE:
         return CON_Read((address - CONSOLE_START));
@@ -111,8 +86,8 @@ uint64_t BUS_Write(uint64_t address, uint64_t data)
     case DEVICE_ROM:
         exit(EXIT_FAILURE);
         break;
-    case DEVICE_MMIO:
-        *((uint64_t *)&mmio[address - MMIO_START]) = data;
+    case DEVICE_FILEOUT:
+        FO_Write((address - FILEOUT_START), data);
         break;
     case DEVICE_CONSOLE:
         CON_Write((address - CONSOLE_START), data);

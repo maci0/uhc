@@ -18,12 +18,16 @@
 #define CONSOLE_DATA_REGISTER (CONSOLE_CONTROL_REGISTER + 8)
 #define CONSOLE_END CONSOLE_DATA_REGISTER
 
+#define FILEOUT_START 0x01100000
+#define FILEOUT_CONTROL_REGISTER FILEOUT_START
+#define FILEOUT_DATA_REGISTER (FILEOUT_CONTROL_REGISTER + 8)
+#define FILEOUT_END FILEOUT_DATA_REGISTER
+
 
 uint64_t BUS_Read(uint64_t address);
 uint64_t BUS_Write(uint64_t buf, uint64_t address);
 uint64_t BUS_SendInterrupt(uint8_t interrupt);
 
-void MMIO_Writer();
 
 
 #endif // BUS_H

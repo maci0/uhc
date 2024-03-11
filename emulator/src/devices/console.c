@@ -138,7 +138,7 @@ void CON_Close()
 void CON_Tick()
 {
     print_debug("\n");
-    //if (ccr.RXRDY == true)
+    if (ccr.RXRDY == true)
         CON_In();
     if (ccr.TXRDY == true)
         CON_Out();

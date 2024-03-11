@@ -7,8 +7,9 @@
 #include "common/common.h"
 #include "core/cpu.h"
 #include "core/bus.h"
-#include "devices/console.h"
 #include "core/clock.h"
+#include "devices/console.h"
+#include "devices/fileout.h"
 
 #define BINFILE "test.bin"
 
@@ -60,6 +61,7 @@ int main(int argc, char *args[])
             CPU_PrintRegisters(); // Print CPU registers
             //MMIO_Writer();
             CON_Tick(); // Console tick
+            FO_Tick(); // Fileout device tick
             // BUS_SendInterrupt(1);
         }
     }
