@@ -1,7 +1,7 @@
 
 *asm* - programs
 
-*assembler* - tasm.pu - the tiny assembler
+*assembler* - tasm.py - the tiny assembler
 
 *emulator* - emulator 
 
