@@ -49,11 +49,9 @@ def parse_file(filename):
             elif directive == ".EQU":
                 # Extract the constant name and value
                 constant_name, constant_value = parts[1], parts[2]
-                #constant_value = isa.Operand.to_int(constant_value_str)  # Convert the value to an integer
                 constants[constant_name] = constant_value
                 print(f"DIRECTIVE: {directive}, Name: {constant_name}, Value: {constant_value}")
                 continue
-
             if directive == ".END":
                 #print ("Encountered directive .END, ending assembly")
                 break
@@ -104,11 +102,9 @@ def parse_file(filename):
 
 
 
-    # Find EQU and replace all instances of the label with the value
     # Find DB and store the value in memory
     # Find DW and store the value in memory
     # Find DS and reserve space in memory
-    # Find END and stop processing
     # Find INCLUDE and include the file
     # Find MACRO and define a macro
     # Find ENDM and end the macro

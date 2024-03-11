@@ -20,4 +20,7 @@ uint64_t BUS_SendInterrupt(uint8_t interrupt);
 void MMIO_Writer();
 
 
+extern uint8_t itr; // Interrupt Register
+
+
 #endif // BUS_H
