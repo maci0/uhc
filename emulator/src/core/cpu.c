@@ -355,11 +355,6 @@ void CPU_DecodeInstruction()
 
 uint64_t CPU_ExecuteInstruction()
 {
-    if (itr == 1)
-    {
-        print_info("INTERRUPT");
-        exit(EXIT_SUCCESS);
-    }
     pc++;
     uint8_t index = instruction.opcode;
 
@@ -453,12 +448,11 @@ void CPU_Init()
 
 void CPU_Tick()
 {
-    // CPU_CheckInterrupts();
-
     CPU_FetchInstruction();
     CPU_DecodeInstruction();
     CPU_ValidateInstruction();
     CPU_ExecuteInstruction();
+    CPU_CheckInterrupts();
 }
 
 /*void print_state()
@@ -477,3 +471,13 @@ void CPU_Tick()
     }
     printf("\n");
 }*/
+
+void CPU_CheckInterrupts(){
+    print_debug("Checking interrupts\n");
+    if (itr == 1)
+    {
+        print_info("INTERRUPT");
+        itr = 0;
+        //exit(EXIT_SUCCESS);
+    }
+}

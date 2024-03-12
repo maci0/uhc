@@ -5,6 +5,6 @@ void CL_Tick();
 
 //#define CLOCK_FREQUENCY 1000000 // 1 MHz clock speed (example)
 #define CLOCK_FREQUENCY 1 // Clock frequency in Hz
-#define BENCHMARK false
+#define BENCHMARK true
 
 #endif // CLOCK_H

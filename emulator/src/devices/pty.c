@@ -14,12 +14,16 @@
 
 static int master_fd = 0;
 static char *slave_name;
+static char read_buf[PTY_BUF_SIZE];
+
 
 void PTY_In();
 void PTY_Out();
 
 int PTY_Init()
 {
+    memset (read_buf, 0, PTY_BUF_SIZE);
+
     print_debug("\n");
     // Open a pseudoterminal device
     master_fd = posix_openpt(O_RDWR | O_NOCTTY);
@@ -62,17 +66,17 @@ void PTY_Tick()
 {
     print_debug("\n");
     PTY_In();
-    //PTY_Out();
+   // PTY_Out();
 }
 
 void PTY_Out()
 {
     print_debug("\n");
 
-    ssize_t num_written;
-    char write_buf[] = "Hello, PTY!\r\n";
+    //char write_buf[] = "Hello, PTY!\r\n";
 
-    num_written = write(master_fd, write_buf, sizeof(write_buf));
+   // ssize_t num_written = write(master_fd, write_buf, sizeof(write_buf));
+    ssize_t num_written = write(master_fd, read_buf, sizeof(read_buf));
     if (num_written == -1)
     {
         perror("write to master pty");
@@ -101,11 +105,8 @@ void PTY_In()
 
     if (FD_ISSET(master_fd, &read_fds))
     {
-        char read_buf[PTY_BUF_SIZE];
-        ssize_t num_read;
-
         // Read from the master side of the PTY
-        num_read = read(master_fd, read_buf, PTY_BUF_SIZE - 1);
+        ssize_t num_read = read(master_fd, read_buf, PTY_BUF_SIZE - 1);
         if (num_read == -1)
         {
             perror("read from master pty");
@@ -115,7 +116,9 @@ void PTY_In()
         // Null-terminate the string read and print it
         read_buf[num_read] = '\0';
         print_debug("Read from PTY: %s\n", read_buf);
-        // BUS_SendInterrupt(1);
+        BUS_SendInterrupt(1);
+        PTY_Out(); // simple echo
+
     }
 }
 
