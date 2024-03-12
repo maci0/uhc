@@ -161,7 +161,7 @@ void PTY_In()
         // Null-terminate the string read and print it
         read_buf[num_read] = '\0';
         print_debug("Read from PTY: %s\n", read_buf);
-        BUS_SendInterrupt(3);
+        BUS_SendInterrupt(1);
         PTY_Out(); // simple echo
 
     }

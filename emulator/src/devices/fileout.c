@@ -43,6 +43,7 @@ void FO_Tick()
     if (registers[0] == 1)
     {
         print_debug("mmio[8] was written to: %u\n", registers[8]);
+        printf("\a");
 
         FILE *file;
 
