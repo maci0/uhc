@@ -23,6 +23,9 @@
 #define FILEOUT_DATA_REGISTER (FILEOUT_CONTROL_REGISTER + 8)
 #define FILEOUT_END FILEOUT_DATA_REGISTER
 
+#define PTY_START (FILEOUT_END + 8)
+#define PTY_END (PTY_START + 256)
+
 
 uint64_t BUS_Read(uint64_t address);
 uint64_t BUS_Write(uint64_t buf, uint64_t address);

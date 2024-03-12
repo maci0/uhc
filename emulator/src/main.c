@@ -10,6 +10,8 @@
 #include "core/clock.h"
 #include "devices/console.h"
 #include "devices/fileout.h"
+#include "devices/pty.h"
+
 
 #define BINFILE "test.bin"
 
@@ -50,7 +52,8 @@ int main(int argc, char *args[])
 
     loadfile();
     CPU_Init();
-    CON_Init();
+   // CON_Init();
+    PTY_Init();
 
     while (!quit)
     {
@@ -60,8 +63,9 @@ int main(int argc, char *args[])
             CPU_Tick(); // CPU tick
             CPU_PrintRegisters(); // Print CPU registers
             //MMIO_Writer();
-            CON_Tick(); // Console tick
-            FO_Tick(); // Fileout device tick
+            //CON_Tick(); // Console tick
+            //FO_Tick(); // Fileout device tick
+            PTY_Tick(); // PTY Tick
             // BUS_SendInterrupt(1);
         }
     }
