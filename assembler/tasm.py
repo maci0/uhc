@@ -139,13 +139,13 @@ def assemble_instruction(asm):
         srcOperand: isa.Operand = isa.Operand.NONE
         destOperand: isa.Operand = isa.Operand.to_int(args[0])
 
-    elif len(args) == 2:
+    if len(args) == 2:
         srcMode = isa.Operand.infer_addressing_mode(args[0])
         destMode = isa.Operand.infer_addressing_mode(args[1])
         srcOperand: isa.Operand = isa.Operand.to_int(args[0])
         destOperand: isa.Operand = isa.Operand.to_int(args[1])
 
-    # print ("OFFSET:", offset)
+    print ("OFFSET:", offset)
     if srcMode == isa.AddressingMode.DIRECT:
         srcOperand += offset
     if destMode == isa.AddressingMode.DIRECT:

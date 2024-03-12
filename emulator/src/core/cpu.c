@@ -9,6 +9,7 @@
 #include "../common/isa.h"
 #include "cpu.h"
 #include "bus.h"
+#include "../memory/ram.h"
 
 // Global variables
 typedef uint64_t (*InstructionHandler)(Instruction instruction);
@@ -34,7 +35,7 @@ static struct flags
 
 Instruction instruction;
 
-extern uint8_t filebuf[1024];
+//extern uint8_t filebuf[1024];
 
 // local functions signatures
 static uint64_t nop(Instruction instruction);
@@ -295,7 +296,7 @@ static uint64_t hlt(Instruction instruction)
 
 void CPU_FetchInstruction()
 {
-    memcpy(ir, &filebuf[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
+    memcpy(ir, &ram[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
     print_debug("%u %u %u %lu %lu\n", ir[0], ir[1], ir[2], *(uint64_t *)(ir + 3), *(uint64_t *)(ir + 11));
 }
 

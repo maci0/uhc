@@ -11,6 +11,7 @@
 #include "devices/console.h"
 #include "devices/fileout.h"
 #include "devices/pty.h"
+#include "memory/ram.h"
 
 
 #define BINFILE "test.bin"
@@ -18,9 +19,9 @@
 // Global state
 static bool running = true;
 static bool quit = false;
-bool debug = false;
+bool debug = true;
 
-uint8_t filebuf[1024];
+//uint8_t filebuf[1024];
 
 void loadfile()
 {
@@ -31,7 +32,7 @@ void loadfile()
     size_t filesize = ftell(binfile);
     rewind(binfile);
 
-    size_t read = fread(filebuf, 1, filesize, binfile);
+    size_t read = fread(ram, 1, filesize, binfile);
     if (read != filesize)
     {
         if (feof(binfile))
@@ -61,12 +62,12 @@ int main(int argc, char *args[])
         {
             CL_Tick(); // Clock tick
             CPU_Tick(); // CPU tick
-            //CPU_PrintRegisters(); // Print CPU registers
+            CPU_PrintRegisters(); // Print CPU registers
             //MMIO_Writer();
             //CON_Tick(); // Console tick
             FO_Tick(); // Fileout device tick
             PTY_Tick(); // PTY Tick
-            // BUS_SendInterrupt(1);
+            //BUS_SendInterrupt(1);
         }
     }
 

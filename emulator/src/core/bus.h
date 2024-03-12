@@ -4,6 +4,12 @@
 #include <stdint.h>
 
 // Memory Layout
+
+//#define INITIAL_SP (uint64_t) 0
+//#define RESET_VECTOR (uint64_t) 8
+//#define INTERRUPT_VECTOR (uint64_t) 16
+
+
 #define RAM_START 0x00000000
 #define RAM_END 0x00FFFFFF // 16 MB RAM
 

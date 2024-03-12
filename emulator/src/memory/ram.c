@@ -2,7 +2,7 @@
 #include "../core/bus.h"
 #include "ram.h"
 
-static uint8_t ram[8388608]; // 8 Megabytes
+uint8_t ram[8388608]; // 8 Megabytes
 
 uint64_t RAM_Read(uint64_t address)
 {
