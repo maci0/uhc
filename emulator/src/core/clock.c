@@ -6,9 +6,12 @@
 
 #include "clock.h"
 
+//static uint8_t pit = 0; // Programmable interval timer
 static struct timespec last_tick_time;
+bool enabled = true;
 
 void CL_Tick() {
+
     if (BENCHMARK == true) return;
 
     struct timespec current_time, sleep_time;

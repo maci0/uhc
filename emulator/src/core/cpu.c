@@ -393,6 +393,7 @@ void CPU_PrintRegisters()
 void CPU_Halt()
 {
     print_debug("\n");
+    CPU_PrintRegisters();
     exit(EXIT_SUCCESS);
 }
 
@@ -474,9 +475,10 @@ void CPU_Tick()
 
 void CPU_CheckInterrupts(){
     print_debug("Checking interrupts\n");
-    if (itr == 1)
+    if (itr != 0)
     {
-        print_info("INTERRUPT");
+        print_info("INTERRUPT: %u\n", itr);
+        pc = 1;  
         itr = 0;
         //exit(EXIT_SUCCESS);
     }

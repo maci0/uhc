@@ -12,7 +12,7 @@ typedef enum
 
 } Interrupt;
 
-extern uint8_t itr; // interrupt register - in cpu.c
+extern uint8_t itr; // interrupt register - in cpu.c -- contains the current interrupt
 
 
 //void INT_Init();

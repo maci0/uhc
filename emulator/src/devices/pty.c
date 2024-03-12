@@ -12,6 +12,23 @@
 
 #define PTY_BUF_SIZE 256
 
+
+extern uint8_t itr;
+
+// console control register
+static struct flags
+{
+    uint8_t reserved : 3;
+    uint8_t ENABLED : 1;
+    uint8_t PARITY_ERR : 1;
+    uint8_t OVERRUN : 1;
+    uint8_t RXRDY : 1;
+    uint8_t TXRDY : 1;
+} ccr = {.TXRDY = 0, .RXRDY = 0, .OVERRUN = 0, .PARITY_ERR = 0, .ENABLED = 0};
+
+// console data register
+static uint8_t cdr[8];
+
 static int master_fd = 0;
 static char *slave_name;
 static char read_buf[PTY_BUF_SIZE];
@@ -20,8 +37,36 @@ static char read_buf[PTY_BUF_SIZE];
 void PTY_In();
 void PTY_Out();
 
+void PTY_Write(uint64_t address, uint64_t data)
+{
+    // If write address is 0, this is the ccr
+    // If write address is 8, this is the start of the buffer
+    print_debug("address: %lu, data: %lu\n", address, data);
+    if (address == 8)
+        *((uint64_t *)&cdr[0]) = data;
+
+    if (address == 0 && data == 1)
+        ccr.TXRDY = 1;
+}
+
+uint64_t PTY_Read(uint64_t address)
+{
+    print_debug("\n");
+    if (address == 8)
+        return *((uint64_t *)&cdr[0]);
+    return 0;
+}
+
+
 int PTY_Init()
 {
+    ccr.TXRDY = 0;
+    ccr.RXRDY = 0;
+    ccr.OVERRUN = 0;
+    ccr.PARITY_ERR = 0;
+    ccr.ENABLED = 0;
+
+    memset(cdr, 0, sizeof(cdr));
     memset (read_buf, 0, PTY_BUF_SIZE);
 
     print_debug("\n");
@@ -116,7 +161,7 @@ void PTY_In()
         // Null-terminate the string read and print it
         read_buf[num_read] = '\0';
         print_debug("Read from PTY: %s\n", read_buf);
-        BUS_SendInterrupt(1);
+        BUS_SendInterrupt(3);
         PTY_Out(); // simple echo
 
     }

@@ -18,7 +18,7 @@
 // Global state
 static bool running = true;
 static bool quit = false;
-bool debug = true;
+bool debug = false;
 
 uint8_t filebuf[1024];
 
@@ -61,10 +61,10 @@ int main(int argc, char *args[])
         {
             CL_Tick(); // Clock tick
             CPU_Tick(); // CPU tick
-            CPU_PrintRegisters(); // Print CPU registers
+            //CPU_PrintRegisters(); // Print CPU registers
             //MMIO_Writer();
             //CON_Tick(); // Console tick
-            //FO_Tick(); // Fileout device tick
+            FO_Tick(); // Fileout device tick
             PTY_Tick(); // PTY Tick
             // BUS_SendInterrupt(1);
         }
