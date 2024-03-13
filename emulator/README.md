@@ -11,24 +11,25 @@ A[Bus]
 B[CPU]
 D[RAM]
 E[ROM]
-F[MMIO]
+F[Video]
 G[Interrupts]
 H[Clock]
 I[Console device]
 J[Fileout device]
 K[File]
 L[User]
+M[Timer]
 
+A <--> F
 B <--> A
 D <--> A
 E --> A
-F <--> A
-G -->  A
+G -->  B
 H --> B
 A <--> I <--> L
 A --> J --> K
 I --> G
-
+H --> M --> G
 
 
 

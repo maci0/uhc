@@ -4,12 +4,34 @@ import argparse
 
 # tasm - the tiny assembler
 
-parser = argparse.ArgumentParser(
-    description="Assembler script to process assembly files."
-)
-parser.add_argument("-o", "--output", help="Output binary file", default="test.bin")
-parser.add_argument("input", help="Input assembly file", default="test.asm")
-args = parser.parse_args()
+
+def preprocess_lines(assembly_code):
+    # Split the code into lines
+    lines = assembly_code.strip().split("\n")
+
+    # Ignore comments
+    lines = [line.split(";")[0].strip() for line in lines]
+
+    # Ignore empty lines
+    lines = [line for line in lines if line.strip()]
+
+    # Uppercase all lines
+    lines = [line.upper() for line in lines]
+
+    return lines
+
+
+def parse_directive(line):
+    parts = line.split()
+    directive = parts[0]
+    if directive == ".ORG":
+        offset = isa.Operand.to_int(parts[1])
+        return directive, offset
+    elif directive == ".EQU":
+        # Extract the constant name and value
+        constant_name, constant_value = parts[1], parts[2]
+        return directive, constant_name, constant_value
+    # Add more elif conditions here for other directives
 
 
 def parse_file(filename):
@@ -32,6 +54,10 @@ def parse_file(filename):
     instructions = []
     labels = {}
     constants = {}
+    data = []
+
+    # State variable to track whether we're parsing instructions or data
+    parsing_data = False
 
     # fixed constants
     constants["SP"] = "R65"
@@ -61,6 +87,11 @@ def parse_file(filename):
                     f"DIRECTIVE: {directive}, Name: {constant_name}, Value: {constant_value}"
                 )
                 continue
+            elif directive == ".DATA":
+                print("DATA PARSING")
+                parsing_data = True
+
+                continue
             if directive == ".END":
                 # print ("Encountered directive .END, ending assembly")
                 break
@@ -74,7 +105,7 @@ def parse_file(filename):
                 print("Error: Label already defined")
                 return None
 
-            labels[label_name] = len(instructions)
+            labels[label_name] = len(instructions * isa.INSTRUCTION_WIDTH)
         else:
             # Split the line into components (instruction and operands)
             parts = line.split()
@@ -97,6 +128,12 @@ def parse_file(filename):
         for op in ops:
             if op in labels:
                 operands.append(str(labels[op]))
+            elif op.startswith("$") and op[1:] in labels:
+                # This is a byte address label
+                byte_address = labels[
+                    op[1:]
+                ]  # Look up the rest of the label in the labels dictionary
+                operands.append("$" + str(byte_address))
             elif op in constants:
                 operands.append(str(constants[op]))
             else:
@@ -145,7 +182,7 @@ def assemble_instruction(asm):
         srcOperand: isa.Operand = isa.Operand.to_int(args[0])
         destOperand: isa.Operand = isa.Operand.to_int(args[1])
 
-    print ("OFFSET:", offset)
+    print("OFFSET:", offset)
     if srcMode == isa.AddressingMode.DIRECT:
         srcOperand += offset
     if destMode == isa.AddressingMode.DIRECT:
@@ -187,4 +224,10 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Assembler script to process assembly files."
+    )
+    parser.add_argument("-o", "--output", help="Output binary file", default="test.bin")
+    parser.add_argument("input", help="Input assembly file", default="test.asm")
+    args = parser.parse_args()
     main()

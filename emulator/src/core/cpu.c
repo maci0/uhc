@@ -16,12 +16,13 @@ typedef uint64_t (*InstructionHandler)(Instruction instruction);
 static InstructionHandler instructionHandlers[256]; //
 
 static uint64_t registers[64];        // General Purpose Registers
+//static uint64_t wor[8];               // write-once registers
 static uint8_t ir[INSTRUCTION_WIDTH]; // Instruction Register - hold the current instruction
-static uint64_t pc = 0;                   // program counter
-static uint64_t sp = 0;                   // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down -- mapped to r65
-static uint64_t ra = 0;                   // return address register, also known as link register
+static uint64_t pc = 0;               // program counter
+static uint64_t sp = 0;               // stack pointer - stack starts at end of 8MB memory minus 1MB, stack grows down -- mapped to r65
+static uint64_t ra = 0;               // return address register, also known as link register
 uint8_t itr = 0;                      // interrupt register
-static uint64_t fp = 0;                   // frame pointer
+static uint64_t fp = 0;               // frame pointer
 
 //  Status register
 static struct flags
@@ -35,7 +36,7 @@ static struct flags
 
 Instruction instruction;
 
-//extern uint8_t filebuf[1024];
+// extern uint8_t filebuf[1024];
 
 // local functions signatures
 static uint64_t nop(Instruction instruction);
@@ -296,8 +297,21 @@ static uint64_t hlt(Instruction instruction)
 
 void CPU_FetchInstruction()
 {
-    // TODO: This should be done through BUS_Read so it can be used to fetch instructions from memory mapped devices
-    memcpy(ir, &ram[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH); 
+    //memcpy(ir, &ram[INSTRUCTION_WIDTH * pc], INSTRUCTION_WIDTH);
+
+
+    uint64_t buf[3];
+    buf[0] = BUS_Read(pc);
+    buf[1] = BUS_Read(pc+8);
+    buf[2] = BUS_Read(pc+16);
+
+    // Convert buf to ir
+    ir[0] = buf[0] & 0xFF; // Least significant byte of buf[0]
+    ir[1] = (buf[0] >> 8) & 0xFF; // Second byte
+    ir[2] = (buf[0] >> 16) & 0xFF; // Third byte
+    *(ir + 3) = (buf[0] >> 24) | (buf[1] << 40);
+    *(ir + 11) = (buf[1] >> 24) | (buf[2] << 40);
+
 
     print_debug("%u %u %u %lu %lu\n", ir[0], ir[1], ir[2], *(uint64_t *)(ir + 3), *(uint64_t *)(ir + 11));
 }
@@ -358,7 +372,7 @@ void CPU_DecodeInstruction()
 
 uint64_t CPU_ExecuteInstruction()
 {
-    pc++;
+    pc = pc + INSTRUCTION_WIDTH;
     uint8_t index = instruction.opcode;
 
     print_debug("%u %u %u %lu %lu\n", instruction.opcode, instruction.srcMode, instruction.destMode, instruction.srcOperand, instruction.destOperand);
@@ -476,16 +490,18 @@ void CPU_Tick()
     printf("\n");
 }*/
 
-void CPU_CheckInterrupts(){
+void CPU_CheckInterrupts()
+{
     print_debug("Checking interrupts\n");
     if (itr != 0)
     {
         print_info("INTERRUPT: %u\n", itr);
-        if (itr == 1){
+        if (itr == 1)
+        {
             pc = BUS_Read(16);
         }
-        //pc = 1;  
+        // pc = 1;
         itr = 0;
-        //exit(EXIT_SUCCESS);
+        // exit(EXIT_SUCCESS);
     }
 }
